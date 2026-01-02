@@ -1,0 +1,71 @@
+{
+  "name": "agi-sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript/JavaScript SDK for AGI.tech API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run tests/unit",
+    "test:watch": "vitest",
+    "test:smoke": "AGI_API_KEY=f94a74fa-bcdf-429f-97b0-37b7a1df6ab2 vitest run tests/smoke-simple.test.ts --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "agi",
+    "automation",
+    "browser",
+    "ai",
+    "agent",
+    "api",
+    "sdk",
+    "typescript",
+    "web-automation"
+  ],
+  "author": "AGI Inc <sdk@agi.tech>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agi-inc/agi-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agi-inc/agi-node/issues"
+  },
+  "homepage": "https://docs.agi.tech",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "eventsource-parser": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.1.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4"
+  }
+}
