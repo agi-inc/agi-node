@@ -49,12 +49,7 @@ export class Screenshot {
    * @param timestamp - Screenshot timestamp (defaults to now)
    * @returns Screenshot instance with decoded image data
    */
-  static fromBase64(
-    base64Data: string,
-    url: string,
-    title: string,
-    timestamp?: Date
-  ): Screenshot {
+  static fromBase64(base64Data: string, url: string, title: string, timestamp?: Date): Screenshot {
     // Parse data URL format: "data:image/jpeg;base64,..."
     let header: string;
     let encoded: string;
@@ -72,22 +67,12 @@ export class Screenshot {
 
     // Determine format from header
     const format =
-      header.toLowerCase().includes('jpeg') || header.toLowerCase().includes('jpg')
-        ? 'jpg'
-        : 'png';
+      header.toLowerCase().includes('jpeg') || header.toLowerCase().includes('jpg') ? 'jpg' : 'png';
 
     // Extract image dimensions
     const { width, height } = Screenshot.getImageDimensions(imageData, format);
 
-    return new Screenshot(
-      imageData,
-      format,
-      timestamp || new Date(),
-      width,
-      height,
-      url,
-      title
-    );
+    return new Screenshot(imageData, format, timestamp || new Date(), width, height, url, title);
   }
 
   /**

@@ -22,16 +22,19 @@ async function testNavigate() {
   console.log('Session created:', session.session_id);
 
   // Navigate
-  const navResponse = await fetch(`https://api.agi.tech/v1/sessions/${session.session_id}/navigate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      url: 'https://example.com',
-    }),
-  });
+  const navResponse = await fetch(
+    `https://api.agi.tech/v1/sessions/${session.session_id}/navigate`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        url: 'https://example.com',
+      }),
+    }
+  );
 
   const navData = await navResponse.json();
 

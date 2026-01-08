@@ -36,11 +36,7 @@ export class HTTPClient {
   /**
    * Make an HTTP request with retries and error handling
    */
-  async request<T>(
-    method: string,
-    path: string,
-    options?: RequestOptions
-  ): Promise<T> {
+  async request<T>(method: string, path: string, options?: RequestOptions): Promise<T> {
     const url = this.buildUrl(path, options?.query);
     const headers = this.buildHeaders(options?.headers);
 
@@ -191,7 +187,7 @@ export class HTTPClient {
     let errorData: Record<string, unknown> | string | undefined;
 
     try {
-      errorData = await response.json() as Record<string, unknown>;
+      errorData = (await response.json()) as Record<string, unknown>;
     } catch {
       errorData = await response.text();
     }
@@ -216,9 +212,17 @@ export class HTTPClient {
         throw new RateLimitError(`Rate limit exceeded: ${errorMessage}`, errorData);
       default:
         if (response.status >= 500) {
-          throw new APIError(`Server error (${response.status}): ${errorMessage}`, response.status, errorData);
+          throw new APIError(
+            `Server error (${response.status}): ${errorMessage}`,
+            response.status,
+            errorData
+          );
         }
-        throw new AGIError(`API error (${response.status}): ${errorMessage}`, response.status, errorData);
+        throw new AGIError(
+          `API error (${response.status}): ${errorMessage}`,
+          response.status,
+          errorData
+        );
     }
   }
 

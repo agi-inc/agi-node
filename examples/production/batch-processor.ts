@@ -211,7 +211,10 @@ export class BatchProcessor {
 /**
  * Example: Extract contact info from multiple websites in parallel.
  */
-async function extractContactInfoBatch(urls: string[], workers: number = 10): Promise<BatchResult[]> {
+async function extractContactInfoBatch(
+  urls: string[],
+  workers: number = 10
+): Promise<BatchResult[]> {
   // Convert URLs to items
   const items: BatchItem[] = urls.map((url, i) => ({
     id: `site_${i + 1}`,
