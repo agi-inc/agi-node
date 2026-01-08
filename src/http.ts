@@ -6,8 +6,10 @@ import { createParser, type EventSourceParser } from 'eventsource-parser';
 import type { AGIClientOptions, SSEEvent } from './types';
 import {
   AGIError,
+  APIError,
   AuthenticationError,
   NotFoundError,
+  PermissionError,
   RateLimitError,
   ValidationError,
 } from './errors';
@@ -204,6 +206,8 @@ export class HTTPClient {
     switch (response.status) {
       case 401:
         throw new AuthenticationError(`Authentication failed: ${errorMessage}`, errorData);
+      case 403:
+        throw new PermissionError(`Permission denied: ${errorMessage}`, errorData);
       case 404:
         throw new NotFoundError(`Resource not found: ${errorMessage}`, errorData);
       case 422:
@@ -211,6 +215,9 @@ export class HTTPClient {
       case 429:
         throw new RateLimitError(`Rate limit exceeded: ${errorMessage}`, errorData);
       default:
+        if (response.status >= 500) {
+          throw new APIError(`Server error (${response.status}): ${errorMessage}`, response.status, errorData);
+        }
         throw new AGIError(`API error (${response.status}): ${errorMessage}`, response.status, errorData);
     }
   }

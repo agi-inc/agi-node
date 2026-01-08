@@ -71,3 +71,25 @@ export class ValidationError extends AGIError {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
+
+/**
+ * Permission error (403)
+ */
+export class PermissionError extends AGIError {
+  constructor(message: string, response?: unknown) {
+    super(message, 403, response);
+    this.name = 'PermissionError';
+    Object.setPrototypeOf(this, PermissionError.prototype);
+  }
+}
+
+/**
+ * API error (5xx server errors)
+ */
+export class APIError extends AGIError {
+  constructor(message: string, statusCode?: number, response?: unknown) {
+    super(message, statusCode, response);
+    this.name = 'APIError';
+    Object.setPrototypeOf(this, APIError.prototype);
+  }
+}

@@ -31,17 +31,18 @@
 import { AGIClient } from 'agi-sdk';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
-const session = await client.createSession('agi-0');
 
-try {
-  const result = await session.runTask(
-    'Find three nonstop flights from SFO to JFK next month under $450. ' +
-    'Return flight times, airlines, and booking links.'
-  );
-  console.log(result);
-} finally {
-  await session.delete();
-}
+// Context manager with automatic cleanup
+await using session = client.session('agi-0');
+
+const result = await session.runTask(
+  'Find three nonstop flights from SFO to JFK next month under $450. ' +
+  'Return flight times, airlines, and booking links.'
+);
+
+console.log(result.data);
+console.log(`Duration: ${result.metadata.duration}s, Steps: ${result.metadata.steps}`);
+// Session automatically deleted
 ```
 
 <br />
@@ -64,59 +65,98 @@ export AGI_API_KEY="your-api-key"
 
 ## Quick Start
 
-### Simple Task
+### Simple Task (Recommended)
 
 ```typescript
 import { AGIClient } from 'agi-sdk';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
-const session = await client.createSession('agi-0');
 
-try {
-  const result = await session.runTask('Find the cheapest iPhone 15 on Amazon');
-  console.log(result);
-} finally {
-  await session.delete();
-}
+// Context manager with automatic cleanup
+await using session = client.session('agi-0');
+
+const result = await session.runTask('Find the cheapest iPhone 15 on Amazon');
+
+console.log(result.data);             // Task output
+console.log(result.metadata.duration); // Execution time in seconds
+console.log(result.metadata.steps);    // Number of steps taken
+// Session automatically deleted when scope exits
 ```
 
 ### Real-Time Event Streaming
 
 ```typescript
-const session = await client.createSession('agi-0');
+await using session = client.session('agi-0');
 
-try {
-  await session.sendMessage('Research the top 5 AI companies in 2025');
+await session.sendMessage('Research the top 5 AI companies in 2025');
 
-  for await (const event of session.streamEvents()) {
-    if (event.event === 'thought') {
-      console.log('💭 Agent:', event.data);
-    }
-    if (event.event === 'done') {
-      console.log('✅ Result:', event.data);
-      break;
-    }
+for await (const event of session.streamEvents()) {
+  if (event.event === 'thought') {
+    console.log('💭 Agent:', event.data);
   }
-} finally {
-  await session.delete();
+  if (event.event === 'done') {
+    console.log('✅ Result:', event.data);
+    break;
+  }
 }
+// Session automatically deleted
+```
+
+### Polling Configuration
+
+Configure timeouts and polling intervals for different task types:
+
+```typescript
+await using session = client.session('agi-0');
+
+// Quick task (1 min timeout, 2s polling)
+const result1 = await session.runTask('What is 2+2?', {
+  timeout: 60000,
+  pollInterval: 2000
+});
+
+// Complex task (15 min timeout, 5s polling)
+const result2 = await session.runTask('Research AI companies...', {
+  timeout: 900000,
+  pollInterval: 5000
+});
+```
+
+### Manual Session Management
+
+For advanced use cases requiring fine-grained control:
+
+```typescript
+// Create session manually
+const response = await client.sessions.create('agi-0', {
+  webhookUrl: 'https://yourapp.com/webhook',
+  maxSteps: 200
+});
+
+// Send message
+await client.sessions.sendMessage(
+  response.sessionId,
+  'Find flights from SFO to JFK under $450'
+);
+
+// Check status
+const status = await client.sessions.getStatus(response.sessionId);
+
+// Delete when done
+await client.sessions.delete(response.sessionId);
 ```
 
 ### Session Control
 
 ```typescript
-const session = await client.createSession('agi-0');
+await using session = client.session('agi-0');
 
-try {
-  await session.sendMessage('Long research task...');
+await session.sendMessage('Long research task...');
 
-  // Control execution
-  await session.pause();    // Pause the agent
-  await session.resume();   // Resume later
-  await session.cancel();   // Or cancel
-} finally {
-  await session.delete();
-}
+// Control execution
+await session.pause();    // Pause the agent
+await session.resume();   // Resume later
+await session.cancel();   // Or cancel
 ```
 
 ---
@@ -130,18 +170,17 @@ try {
 Every task runs inside a **session** - an isolated browser environment:
 
 ```typescript
-// Create session
-const session = await client.createSession('agi-0');
+// Recommended: Context manager (automatic cleanup)
+await using session = client.session('agi-0');
+await session.runTask('Find flights...');
+// Session automatically deleted
 
-try {
-  await session.runTask('Find flights...');
-} finally {
-  // Always clean up
-  await session.delete();
-}
+// Alternative: Manual management
+const response = await client.sessions.create('agi-0');
+await client.sessions.delete(response.sessionId);
 ```
 
-▸ Always use try/finally to ensure cleanup. Sessions consume resources and should be deleted when done.
+▸ Use context managers (`await using`) for automatic cleanup. Sessions consume resources and should be deleted when done.
 
 ### Available Agents
 

@@ -2,6 +2,15 @@
  * Type definitions for AGI SDK
  */
 
+// ===== RESULT TYPES =====
+
+export type { TaskResult, TaskMetadata } from './results';
+export { Screenshot } from './screenshot';
+
+// ===== SNAPSHOT MODE =====
+
+export type SnapshotMode = 'none' | 'memory' | 'filesystem';
+
 // ===== SESSION STATUS & EVENTS =====
 
 export type SessionStatus =
@@ -151,6 +160,10 @@ export interface RunTaskOptions {
   startUrl?: string;
   /** Optional configuration updates */
   configUpdates?: Record<string, unknown>;
+  /** Maximum time to wait for task completion in milliseconds (default: 600000 = 10 min) */
+  timeout?: number;
+  /** Polling interval in milliseconds (default: 3000 = 3s) */
+  pollInterval?: number;
 }
 
 export interface StreamOptions {

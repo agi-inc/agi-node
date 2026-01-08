@@ -4,15 +4,18 @@
  * @packageDocumentation
  */
 
-// Main client and session
+// Main client and context
 export { AGIClient } from './client';
-export { Session } from './session';
+export { SessionContext } from './context';
+export { SessionsResource } from './resources';
 
 // Error classes
 export {
   AGIError,
+  APIError,
   AuthenticationError,
   NotFoundError,
+  PermissionError,
   RateLimitError,
   AgentExecutionError,
   ValidationError,
@@ -37,4 +40,9 @@ export type {
   SessionStatus,
   EventType,
   MessageType,
+  SnapshotMode,
+  TaskResult,
+  TaskMetadata,
 } from './types';
+
+export { Screenshot } from './types/screenshot';
