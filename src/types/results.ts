@@ -33,7 +33,7 @@ export interface TaskMetadata {
  * console.log(`Steps: ${result.metadata.steps}`);
  * ```
  */
-export interface TaskResult<T = any> {
+export interface TaskResult<T = unknown> {
   /** Task output data */
   data: T;
   /** Execution metadata */

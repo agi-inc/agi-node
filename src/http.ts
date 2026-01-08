@@ -3,7 +3,7 @@
  */
 
 import { createParser, type EventSourceParser } from 'eventsource-parser';
-import type { AGIClientOptions, SSEEvent } from './types';
+import type { AGIClientOptions, EventType, SSEEvent } from './types';
 import {
   AGIError,
   APIError,
@@ -126,7 +126,7 @@ export class HTTPClient {
           const data = JSON.parse(event.data);
           this.pendingEvents.push({
             id: event.id,
-            event: event.event as any,
+            event: event.event as EventType,
             data,
           });
         } catch {
@@ -188,10 +188,10 @@ export class HTTPClient {
   }
 
   private async handleErrorResponse(response: Response): Promise<never> {
-    let errorData: any;
+    let errorData: Record<string, unknown> | string | undefined;
 
     try {
-      errorData = await response.json();
+      errorData = await response.json() as Record<string, unknown>;
     } catch {
       errorData = await response.text();
     }

@@ -108,6 +108,7 @@ export class SessionContext {
 
     const startTime = Date.now();
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const elapsed = Date.now() - startTime;
 

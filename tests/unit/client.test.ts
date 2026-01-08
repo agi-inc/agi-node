@@ -17,6 +17,7 @@ describe('AGIClient', () => {
     it('should create client with API key', () => {
       const client = new AGIClient({ apiKey: 'test-key' });
       expect(client).toBeDefined();
+      expect(client.sessions).toBeDefined();
     });
 
     it('should throw error without API key', () => {
@@ -55,22 +56,22 @@ describe('AGIClient', () => {
     });
   });
 
-  describe('createSession', () => {
+  describe('sessions.create', () => {
     it('should create session with default agent', async () => {
       const mockHttp = {
         request: vi.fn().mockResolvedValue({
-          sessionId: 'test-session',
-          vncUrl: 'https://vnc.example.com',
-          agentName: 'agi-0',
+          session_id: 'test-session',
+          vnc_url: 'https://vnc.example.com',
+          agent_name: 'agi-0',
           status: 'ready',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         }),
       };
 
       vi.mocked(HTTPClient).mockReturnValue(mockHttp as any);
 
       const client = new AGIClient({ apiKey: 'test-key' });
-      const session = await client.createSession();
+      const session = await client.sessions.create();
 
       expect(mockHttp.request).toHaveBeenCalledWith(
         'POST',
@@ -89,18 +90,18 @@ describe('AGIClient', () => {
     it('should create session with custom agent and options', async () => {
       const mockHttp = {
         request: vi.fn().mockResolvedValue({
-          sessionId: 'test-session',
-          vncUrl: 'https://vnc.example.com',
-          agentName: 'agi-0-fast',
+          session_id: 'test-session',
+          vnc_url: 'https://vnc.example.com',
+          agent_name: 'agi-0-fast',
           status: 'ready',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         }),
       };
 
       vi.mocked(HTTPClient).mockReturnValue(mockHttp as any);
 
       const client = new AGIClient({ apiKey: 'test-key' });
-      const session = await client.createSession('agi-0-fast', {
+      const session = await client.sessions.create('agi-0-fast', {
         webhookUrl: 'https://example.com/webhook',
         maxSteps: 200,
       });
@@ -119,23 +120,23 @@ describe('AGIClient', () => {
     });
   });
 
-  describe('listSessions', () => {
+  describe('sessions.list', () => {
     it('should list all sessions', async () => {
       const mockHttp = {
         request: vi.fn().mockResolvedValue([
           {
-            sessionId: 'session-1',
-            vncUrl: 'https://vnc1.example.com',
-            agentName: 'agi-0',
+            session_id: 'session-1',
+            vnc_url: 'https://vnc1.example.com',
+            agent_name: 'agi-0',
             status: 'ready',
-            createdAt: new Date().toISOString(),
+            created_at: new Date().toISOString(),
           },
           {
-            sessionId: 'session-2',
-            vncUrl: 'https://vnc2.example.com',
-            agentName: 'agi-0',
+            session_id: 'session-2',
+            vnc_url: 'https://vnc2.example.com',
+            agent_name: 'agi-0',
             status: 'running',
-            createdAt: new Date().toISOString(),
+            created_at: new Date().toISOString(),
           },
         ]),
       };
@@ -143,7 +144,7 @@ describe('AGIClient', () => {
       vi.mocked(HTTPClient).mockReturnValue(mockHttp as any);
 
       const client = new AGIClient({ apiKey: 'test-key' });
-      const sessions = await client.listSessions();
+      const sessions = await client.sessions.list();
 
       expect(mockHttp.request).toHaveBeenCalledWith('GET', '/v1/sessions');
       expect(sessions).toHaveLength(2);
@@ -152,40 +153,49 @@ describe('AGIClient', () => {
     });
   });
 
-  describe('getSession', () => {
+  describe('sessions.get', () => {
     it('should get session by ID', async () => {
       const mockHttp = {
         request: vi.fn().mockResolvedValue({
-          sessionId: 'test-session',
-          vncUrl: 'https://vnc.example.com',
-          agentName: 'agi-0',
+          session_id: 'test-session',
+          vnc_url: 'https://vnc.example.com',
+          agent_name: 'agi-0',
           status: 'ready',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         }),
       };
 
       vi.mocked(HTTPClient).mockReturnValue(mockHttp as any);
 
       const client = new AGIClient({ apiKey: 'test-key' });
-      const session = await client.getSession('test-session');
+      const session = await client.sessions.get('test-session');
 
       expect(mockHttp.request).toHaveBeenCalledWith('GET', '/v1/sessions/test-session');
       expect(session.sessionId).toBe('test-session');
     });
   });
 
-  describe('deleteAllSessions', () => {
+  describe('sessions.deleteAll', () => {
     it('should delete all sessions', async () => {
       const mockHttp = {
-        request: vi.fn().mockResolvedValue(undefined),
+        request: vi.fn().mockResolvedValue({ deleted: true }),
       };
 
       vi.mocked(HTTPClient).mockReturnValue(mockHttp as any);
 
       const client = new AGIClient({ apiKey: 'test-key' });
-      await client.deleteAllSessions();
+      await client.sessions.deleteAll();
 
       expect(mockHttp.request).toHaveBeenCalledWith('DELETE', '/v1/sessions');
+    });
+  });
+
+  describe('session() context manager', () => {
+    it('should create SessionContext', () => {
+      const client = new AGIClient({ apiKey: 'test-key' });
+      const sessionContext = client.session('agi-0');
+
+      expect(sessionContext).toBeDefined();
     });
   });
 });

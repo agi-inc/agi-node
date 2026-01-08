@@ -59,11 +59,11 @@ export class SessionsResource {
       payload.restore_from_environment_id = options.restoreFromEnvironmentId;
     }
 
-    const response = await this.http.request<any>('POST', '/v1/sessions', {
+    const response = await this.http.request<Record<string, unknown>>('POST', '/v1/sessions', {
       json: payload,
     });
 
-    return normalizeSessionResponse(response) as SessionResponse;
+    return normalizeSessionResponse(response);
   }
 
   /**
@@ -80,8 +80,8 @@ export class SessionsResource {
    * ```
    */
   async list(): Promise<SessionResponse[]> {
-    const responses = await this.http.request<any[]>('GET', '/v1/sessions');
-    return responses.map(normalizeSessionResponse) as SessionResponse[];
+    const responses = await this.http.request<Array<Record<string, unknown>>>('GET', '/v1/sessions');
+    return responses.map(normalizeSessionResponse);
   }
 
   /**
@@ -97,8 +97,8 @@ export class SessionsResource {
    * ```
    */
   async get(sessionId: string): Promise<SessionResponse> {
-    const response = await this.http.request<any>('GET', `/v1/sessions/${sessionId}`);
-    return normalizeSessionResponse(response) as SessionResponse;
+    const response = await this.http.request<Record<string, unknown>>('GET', `/v1/sessions/${sessionId}`);
+    return normalizeSessionResponse(response);
   }
 
   /**
@@ -211,7 +211,7 @@ export class SessionsResource {
     afterId: number = 0,
     sanitize: boolean = true
   ): Promise<MessagesResponse> {
-    const response = await this.http.request<any>('GET', `/v1/sessions/${sessionId}/messages`, {
+    const response = await this.http.request<Record<string, unknown>>('GET', `/v1/sessions/${sessionId}/messages`, {
       query: {
         after_id: String(afterId),
         sanitize: String(sanitize),
@@ -219,9 +219,9 @@ export class SessionsResource {
     });
 
     return {
-      messages: response.messages || [],
-      status: response.status,
-      hasAgent: response.has_agent ?? response.hasAgent ?? false,
+      messages: (response.messages || []) as MessagesResponse['messages'],
+      status: response.status as string,
+      hasAgent: (response.has_agent ?? response.hasAgent ?? false) as boolean,
     };
   }
 
@@ -327,12 +327,12 @@ export class SessionsResource {
    * ```
    */
   async navigate(sessionId: string, url: string): Promise<NavigateResponse> {
-    const response = await this.http.request<any>('POST', `/v1/sessions/${sessionId}/navigate`, {
+    const response = await this.http.request<Record<string, unknown>>('POST', `/v1/sessions/${sessionId}/navigate`, {
       json: { url },
     });
 
     return {
-      currentUrl: response.current_url ?? response.currentUrl,
+      currentUrl: (response.current_url ?? response.currentUrl) as string,
     };
   }
 
