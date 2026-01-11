@@ -21,7 +21,7 @@
 
 ---
 
-**AI agent that actually works on the web.**
+**Universal Computer-Use AI**
 
 <br />
 
