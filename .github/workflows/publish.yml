@@ -71,7 +71,7 @@ jobs:
       id-token: write
     environment:
       name: npm
-      url: https://www.npmjs.com/package/@agi_inc/agi-js
+      url: https://www.npmjs.com/package/agi
     steps:
       - uses: actions/checkout@v4
 

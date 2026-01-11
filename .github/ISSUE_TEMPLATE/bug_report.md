@@ -28,7 +28,7 @@ assignees: ''
 
 ```typescript
 // Minimal code to reproduce the issue
-import { AGIClient } from 'agi-sdk';
+import { AGIClient } from 'agi';
 
 const client = new AGIClient({ apiKey: 'your-api-key' });
 // ...
