@@ -1,5 +1,5 @@
 {
-  "name": "agi-sdk",
+  "name": "@agi_inc/agi-js",
   "version": "0.0.1",
   "description": "Official TypeScript/JavaScript SDK for AGI.tech API",
   "main": "./dist/index.js",
@@ -51,7 +51,7 @@
   },
   "homepage": "https://docs.agi.tech",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.4.0"
   },
   "dependencies": {
     "eventsource-parser": "^1.1.2"

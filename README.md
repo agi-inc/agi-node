@@ -5,11 +5,11 @@
 <h1>AGI Node.js SDK</h1>
 
 <p>
-  <a href="https://www.npmjs.com/package/agi-sdk"><img src="https://img.shields.io/npm/v/agi-sdk?style=flat-square" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@agi_inc/agi-js"><img src="https://img.shields.io/npm/v/@agi_inc/agi-js?style=flat-square" alt="npm version"></a>
   <a href="https://github.com/agi-inc/agi-node/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/agi-inc/agi-node/ci.yml?branch=main&style=flat-square" alt="Build Status"></a>
   <a href="https://codecov.io/gh/agi-inc/agi-node"><img src="https://img.shields.io/codecov/c/github/agi-inc/agi-node?style=flat-square" alt="Coverage"></a>
-  <a href="https://github.com/agi-inc/agi-node/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/agi-sdk?style=flat-square" alt="License"></a>
-  <a href="https://www.npmjs.com/package/agi-sdk"><img src="https://img.shields.io/npm/dm/agi-sdk?style=flat-square" alt="Downloads"></a>
+  <a href="https://github.com/agi-inc/agi-node/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@agi_inc/agi-js?style=flat-square" alt="License"></a>
+  <a href="https://www.npmjs.com/package/@agi_inc/agi-js"><img src="https://img.shields.io/npm/dm/@agi_inc/agi-js?style=flat-square" alt="Downloads"></a>
 </p>
 
 <p>
@@ -28,7 +28,7 @@
 </div>
 
 ```typescript
-import { AGIClient } from 'agi-sdk';
+import { AGIClient } from '@agi_inc/agi-js';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -37,7 +37,7 @@ await using session = client.session('agi-0');
 
 const result = await session.runTask(
   'Find three nonstop flights from SFO to JFK next month under $450. ' +
-  'Return flight times, airlines, and booking links.'
+    'Return flight times, airlines, and booking links.'
 );
 
 console.log(result.data);
@@ -54,7 +54,7 @@ console.log(`Duration: ${result.metadata.duration}s, Steps: ${result.metadata.st
 ## Installation
 
 ```bash
-npm install agi-sdk
+npm install @agi_inc/agi-js
 ```
 
 Get your API key at [platform.agi.tech](https://platform.agi.tech/api-keys)
@@ -68,7 +68,7 @@ export AGI_API_KEY="your-api-key"
 ### Simple Task (Recommended)
 
 ```typescript
-import { AGIClient } from 'agi-sdk';
+import { AGIClient } from '@agi_inc/agi-js';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -77,9 +77,9 @@ await using session = client.session('agi-0');
 
 const result = await session.runTask('Find the cheapest iPhone 15 on Amazon');
 
-console.log(result.data);             // Task output
+console.log(result.data); // Task output
 console.log(result.metadata.duration); // Execution time in seconds
-console.log(result.metadata.steps);    // Number of steps taken
+console.log(result.metadata.steps); // Number of steps taken
 // Session automatically deleted when scope exits
 ```
 
@@ -112,13 +112,13 @@ await using session = client.session('agi-0');
 // Quick task (1 min timeout, 2s polling)
 const result1 = await session.runTask('What is 2+2?', {
   timeout: 60000,
-  pollInterval: 2000
+  pollInterval: 2000,
 });
 
 // Complex task (15 min timeout, 5s polling)
 const result2 = await session.runTask('Research AI companies...', {
   timeout: 900000,
-  pollInterval: 5000
+  pollInterval: 5000,
 });
 ```
 
@@ -130,14 +130,11 @@ For advanced use cases requiring fine-grained control:
 // Create session manually
 const response = await client.sessions.create('agi-0', {
   webhookUrl: 'https://yourapp.com/webhook',
-  maxSteps: 200
+  maxSteps: 200,
 });
 
 // Send message
-await client.sessions.sendMessage(
-  response.sessionId,
-  'Find flights from SFO to JFK under $450'
-);
+await client.sessions.sendMessage(response.sessionId, 'Find flights from SFO to JFK under $450');
 
 // Check status
 const status = await client.sessions.getStatus(response.sessionId);
@@ -154,16 +151,16 @@ await using session = client.session('agi-0');
 await session.sendMessage('Long research task...');
 
 // Control execution
-await session.pause();    // Pause the agent
-await session.resume();   // Resume later
-await session.cancel();   // Or cancel
+await session.pause(); // Pause the agent
+await session.resume(); // Resume later
+await session.cancel(); // Or cancel
 ```
 
 ---
 
 ## Core Concepts
 
-*Understanding the building blocks of agi-sdk*
+_Understanding the building blocks of agi-js_
 
 ### Sessions: The Container for Tasks
 
@@ -215,8 +212,8 @@ const session = await client.createSession('agi-0');
 try {
   const result = await session.runTask(
     'Go to amazon.com and search for "Sony WH-1000XM5". ' +
-    'Get the current price, check if it\'s in stock, and return the product rating. ' +
-    'Return as JSON with fields: price, in_stock, rating, url.'
+      "Get the current price, check if it's in stock, and return the product rating. " +
+      'Return as JSON with fields: price, in_stock, rating, url.'
   );
   console.log(result);
 } finally {
@@ -234,8 +231,8 @@ const session = await client.createSession('agi-0');
 try {
   const result = await session.runTask(
     'Go to ycombinator.com/companies, find companies in the "AI" category ' +
-    'from the latest batch. For the first 10 companies, get their name, ' +
-    'description, and website. Return as a JSON array.'
+      'from the latest batch. For the first 10 companies, get their name, ' +
+      'description, and website. Return as a JSON array.'
   );
   console.log(result);
 } finally {
@@ -251,8 +248,8 @@ const session = await client.createSession('agi-0');
 try {
   const result = await session.runTask(
     'Find three nonstop SFO→JFK flights next month under $450. ' +
-    'Compare prices on Google Flights, Kayak, and Expedia. ' +
-    'Return flight details and booking links.'
+      'Compare prices on Google Flights, Kayak, and Expedia. ' +
+      'Return flight details and booking links.'
   );
   console.log(result);
 } finally {
@@ -274,8 +271,8 @@ try {
 
   // Get screenshot for debugging
   const screenshot = await session.screenshot();
-  console.log(screenshot.url);    // Current page URL
-  console.log(screenshot.title);  // Page title
+  console.log(screenshot.url); // Current page URL
+  console.log(screenshot.title); // Page title
   // screenshot.screenshot contains base64 JPEG data
 } finally {
   await session.delete();
@@ -323,7 +320,7 @@ await session.sendMessage('Find flights from SFO to JFK under $450');
 
 // Check status
 const status = await session.getStatus();
-console.log(status.status);  // "running", "finished", etc.
+console.log(status.status); // "running", "finished", etc.
 
 // List all sessions
 const sessions = await client.listSessions();
@@ -372,7 +369,7 @@ import {
   RateLimitError,
   AgentExecutionError,
   AGIError,
-} from 'agi-sdk';
+} from 'agi-js';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -404,14 +401,56 @@ try {
 
 ---
 
+## Examples
+
+**Real-world, production-ready examples** → See [examples/](./examples)
+
+### Quick Start
+
+```bash
+# 5-line hello world
+npx tsx examples/hello-world.ts
+
+# Price tracking
+npx tsx examples/ecommerce/price-tracker.ts \
+  --product "Sony WH-1000XM5" --max-price 350
+
+# Flight search
+npx tsx examples/travel/flight-finder.ts \
+  --from SFO --to JFK --date "2026-02-15" --max-price 450
+
+# B2B lead generation
+npx tsx examples/sales-marketing/linkedin-scraper.ts \
+  --industry "SaaS" --location "San Francisco" --count 10
+
+# Competitor analysis
+npx tsx examples/research/competitor-analysis.ts \
+  --competitors "stripe.com,square.com,paypal.com"
+```
+
+### Example Categories
+
+- **[Basic](./examples#-basic-examples-basic)** (⭐ Beginner) - Quickstart, error handling, streaming
+- **[E-Commerce](./examples#-e-commerce-ecommerce)** (⭐⭐ Intermediate) - Price tracking, product comparison
+- **[Travel](./examples#️-travel-travel)** (⭐⭐ Intermediate) - Flight search, booking research
+- **[Sales & Marketing](./examples#-sales--marketing-sales-marketing)** (⭐⭐ Intermediate) - Lead generation, LinkedIn scraping
+- **[Research](./examples#-research-research)** (⭐⭐ Intermediate) - Competitive analysis, market research
+- **[Production](./examples#-production-patterns-production)** (⭐⭐⭐ Advanced) - Batch processing, webhook servers
+
+**Learning Path**: [hello-world.ts](./examples/hello-world.ts) → [basic/quickstart.ts](./examples/basic/quickstart.ts) → [Choose your domain](./examples#-examples-by-category) → [Production patterns](./examples#-production-patterns-production)
+
+---
+
 ## Documentation & Resources
 
 **Learn More**
+
 - [API Reference](https://docs.agi.tech) – Complete API documentation
-- [Code Examples](./examples) – Working examples for common tasks
+- [Code Examples](./examples) – 15+ production-ready examples
 - [GitHub Issues](https://github.com/agi-inc/agi-node/issues) – Report bugs or request features
 
 **Get Help**
+
 - [Platform](https://platform.agi.tech) – Manage API keys and monitor usage
 - [Documentation](https://docs.agi.tech) – Guides and tutorials
 
@@ -422,12 +461,7 @@ try {
 This SDK is written in TypeScript and provides full type definitions:
 
 ```typescript
-import type {
-  Session,
-  SessionStatus,
-  SSEEvent,
-  NavigateResponse
-} from 'agi-sdk';
+import type { Session, SessionStatus, SSEEvent, NavigateResponse } from 'agi-js';
 
 const session: Session = await client.createSession('agi-0');
 const status: SessionStatus = (await session.getStatus()).status;
@@ -437,7 +471,7 @@ const status: SessionStatus = (await session.getStatus()).status;
 
 ## Requirements
 
-- Node.js 18 or higher
+- Node.js 20.4 or higher (required for `await using` syntax)
 - TypeScript 5.0+ (for TypeScript users)
 
 ---
