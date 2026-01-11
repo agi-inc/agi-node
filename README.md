@@ -5,11 +5,11 @@
 <h1>AGI Node.js SDK</h1>
 
 <p>
-  <a href="https://www.npmjs.com/package/@agi_inc/agi-js"><img src="https://img.shields.io/npm/v/@agi_inc/agi-js?style=flat-square" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/agi"><img src="https://img.shields.io/npm/v/agi?style=flat-square" alt="npm version"></a>
   <a href="https://github.com/agi-inc/agi-node/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/agi-inc/agi-node/ci.yml?branch=main&style=flat-square" alt="Build Status"></a>
   <a href="https://codecov.io/gh/agi-inc/agi-node"><img src="https://img.shields.io/codecov/c/github/agi-inc/agi-node?style=flat-square" alt="Coverage"></a>
-  <a href="https://github.com/agi-inc/agi-node/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@agi_inc/agi-js?style=flat-square" alt="License"></a>
-  <a href="https://www.npmjs.com/package/@agi_inc/agi-js"><img src="https://img.shields.io/npm/dm/@agi_inc/agi-js?style=flat-square" alt="Downloads"></a>
+  <a href="https://github.com/agi-inc/agi-node/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/agi?style=flat-square" alt="License"></a>
+  <a href="https://www.npmjs.com/package/agi"><img src="https://img.shields.io/npm/dm/agi?style=flat-square" alt="Downloads"></a>
 </p>
 
 <p>
@@ -28,7 +28,7 @@
 </div>
 
 ```typescript
-import { AGIClient } from '@agi_inc/agi-js';
+import { AGIClient } from 'agi';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -54,7 +54,7 @@ console.log(`Duration: ${result.metadata.duration}s, Steps: ${result.metadata.st
 ## Installation
 
 ```bash
-npm install @agi_inc/agi-js
+npm install agi
 ```
 
 Get your API key at [platform.agi.tech](https://platform.agi.tech/api-keys)
@@ -68,7 +68,7 @@ export AGI_API_KEY="your-api-key"
 ### Simple Task (Recommended)
 
 ```typescript
-import { AGIClient } from '@agi_inc/agi-js';
+import { AGIClient } from 'agi';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -160,7 +160,7 @@ await session.cancel(); // Or cancel
 
 ## Core Concepts
 
-_Understanding the building blocks of agi-js_
+_Understanding the building blocks of agi_
 
 ### Sessions: The Container for Tasks
 
@@ -369,7 +369,7 @@ import {
   RateLimitError,
   AgentExecutionError,
   AGIError,
-} from 'agi-js';
+} from 'agi';
 
 const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
 
@@ -461,7 +461,7 @@ npx tsx examples/research/competitor-analysis.ts \
 This SDK is written in TypeScript and provides full type definitions:
 
 ```typescript
-import type { Session, SessionStatus, SSEEvent, NavigateResponse } from 'agi-js';
+import type { Session, SessionStatus, SSEEvent, NavigateResponse } from 'agi';
 
 const session: Session = await client.createSession('agi-0');
 const status: SessionStatus = (await session.getStatus()).status;

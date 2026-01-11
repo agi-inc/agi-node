@@ -1,6 +1,6 @@
 {
-  "name": "@agi_inc/agi-js",
-  "version": "0.0.1",
+  "name": "agi",
+  "version": "0.3.0",
   "description": "Official TypeScript/JavaScript SDK for AGI.tech API",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
