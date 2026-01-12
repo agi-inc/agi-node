@@ -9,6 +9,18 @@ export { AGIClient } from './client';
 export { SessionContext } from './context';
 export { SessionsResource } from './resources';
 
+// Loop utilities
+export {
+  AgentLoop,
+  type AgentLoopOptions,
+  type LoopState,
+  type CaptureScreenshotFn,
+  type ExecuteActionsFn,
+  type OnThinkingFn,
+  type OnAskUserFn,
+  type OnStepFn,
+} from './loop';
+
 // Error classes
 export {
   AGIError,
@@ -23,7 +35,9 @@ export {
 
 // Types
 export type {
+  // Client options
   AGIClientOptions,
+  // Session types
   CreateSessionOptions,
   SessionResponse,
   ExecuteStatusResponse,
@@ -37,6 +51,14 @@ export type {
   MessageOptions,
   RunTaskOptions,
   StreamOptions,
+  // Client-driven session types
+  DesktopAction,
+  DesktopActionType,
+  ModelsResponse,
+  StepDesktopRequest,
+  StepDesktopResponse,
+  // Shared types
+  AgentSessionType,
   SessionStatus,
   EventType,
   MessageType,

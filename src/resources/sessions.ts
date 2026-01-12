@@ -13,6 +13,8 @@ import type {
   ScreenshotResponse,
   SSEEvent,
   SnapshotMode,
+  StepDesktopResponse,
+  ModelsResponse,
 } from '../types';
 import { normalizeSessionResponse } from '../utils';
 
@@ -27,16 +29,24 @@ export class SessionsResource {
   /**
    * Create a new agent session
    *
-   * @param agentName - Agent model to use (e.g., "agi-0", "agi-0-fast", "agi-1")
+   * @param agentName - Agent model to use (e.g., "agi-0", "agi-2-claude")
    * @param options - Session creation options
-   * @returns SessionResponse with session_id, vnc_url, status, etc.
+   * @returns SessionResponse with sessionId, vncUrl, agentUrl, status, etc.
    *
    * @example
    * ```typescript
+   * // Standard browser session
    * const session = await client.sessions.create('agi-0', {
    *   webhookUrl: 'https://yourapp.com/webhook',
    *   maxSteps: 200
    * });
+   *
+   * // Desktop session (client-managed)
+   * const session = await client.sessions.create('agi-2-claude', {
+   *   agentSessionType: 'desktop',
+   *   goal: 'Open calculator and compute 2+2'
+   * });
+   * console.log(session.agentUrl); // Use with client.desktop.step()
    * ```
    */
   async create(
@@ -46,6 +56,8 @@ export class SessionsResource {
       goal?: string;
       maxSteps?: number;
       restoreFromEnvironmentId?: string;
+      agentSessionType?: string;
+      cdpUrl?: string;
     }
   ): Promise<SessionResponse> {
     const payload: Record<string, unknown> = {
@@ -58,6 +70,10 @@ export class SessionsResource {
     if (options?.restoreFromEnvironmentId) {
       payload.restore_from_environment_id = options.restoreFromEnvironmentId;
     }
+    if (options?.agentSessionType) {
+      payload.agent_session_type = options.agentSessionType;
+    }
+    if (options?.cdpUrl) payload.cdp_url = options.cdpUrl;
 
     const response = await this.http.request<Record<string, unknown>>('POST', '/v1/sessions', {
       json: payload,
@@ -364,5 +380,97 @@ export class SessionsResource {
    */
   async screenshot(sessionId: string): Promise<ScreenshotResponse> {
     return this.http.request<ScreenshotResponse>('GET', `/v1/sessions/${sessionId}/screenshot`);
+  }
+
+  // ===== CLIENT-DRIVEN SESSION CONTROL =====
+
+  /**
+   * Execute a single step for client-driven sessions (desktop mode).
+   *
+   * In desktop mode (agentSessionType="desktop"), the client manages the
+   * execution loop. This method sends a screenshot to the agent and receives
+   * actions to execute locally.
+   *
+   * @param agentUrl - Agent service URL from session.agentUrl
+   * @param screenshot - Base64-encoded screenshot (full resolution, JPEG or PNG)
+   * @param message - Optional user message (goal on first call, or follow-up instruction)
+   * @returns StepDesktopResponse with actions, thinking, finished, askUser, and step
+   *
+   * @example
+   * ```typescript
+   * // Create a desktop session
+   * const session = await client.sessions.create('agi-2-claude', {
+   *   agentSessionType: 'desktop',
+   *   goal: 'Open calculator and compute 2+2'
+   * });
+   *
+   * // Client-managed loop
+   * let finished = false;
+   * while (!finished) {
+   *   const screenshot = captureScreenshot(); // Client captures
+   *   const result = await client.sessions.step(session.agentUrl!, screenshot);
+   *   executeActions(result.actions); // Client executes
+   *   finished = result.finished;
+   *   if (result.askUser) {
+   *     const answer = await promptUser(result.askUser);
+   *     // Send answer in next step
+   *   }
+   * }
+   * ```
+   */
+  async step(
+    agentUrl: string,
+    screenshot: string,
+    message?: string
+  ): Promise<StepDesktopResponse> {
+    const url = `${agentUrl.replace(/\/$/, '')}/step_desktop`;
+    const payload: Record<string, unknown> = { screenshot };
+
+    if (message !== undefined) {
+      payload.message = message;
+    }
+
+    const response = await this.http.requestUrl<Record<string, unknown>>('POST', url, {
+      json: payload,
+    });
+
+    return {
+      actions: (response.actions || []) as StepDesktopResponse['actions'],
+      thinking: response.thinking as string | undefined,
+      finished: (response.finished ?? false) as boolean,
+      askUser: (response.ask_user ?? response.askUser) as string | undefined,
+      step: (response.step ?? 0) as number,
+    };
+  }
+
+  // ===== MODELS =====
+
+  /**
+   * List available agent models.
+   *
+   * @param filter - Optional filter: "cdp" for browser agents, "quantum" for
+   *                 quantum protocol agents, "desktop" for desktop agents,
+   *                 "android" for Android agents
+   * @returns ModelsResponse with list of available model names
+   *
+   * @example
+   * ```typescript
+   * // List all models
+   * const models = await client.sessions.listModels();
+   * console.log(models.models);
+   *
+   * // List only desktop-compatible models
+   * const desktopModels = await client.sessions.listModels('desktop');
+   * console.log(desktopModels.models);
+   * // ['agi-2-claude', 'agi-2-qwen']
+   * ```
+   */
+  async listModels(filter?: string): Promise<ModelsResponse> {
+    const query: Record<string, string> = {};
+    if (filter) {
+      query.filter = filter;
+    }
+
+    return this.http.request<ModelsResponse>('GET', '/v1/models', { query });
   }
 }

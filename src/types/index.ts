@@ -11,6 +11,15 @@ export { Screenshot } from './screenshot';
 
 export type SnapshotMode = 'none' | 'memory' | 'filesystem';
 
+// ===== AGENT SESSION TYPES =====
+
+export type AgentSessionType =
+  | 'managed-cdp'
+  | 'external-cdp'
+  | 'desktop'
+  | 'quantum-0-3-x'
+  | 'android';
+
 // ===== SESSION STATUS & EVENTS =====
 
 export type SessionStatus =
@@ -59,6 +68,10 @@ export interface CreateSessionOptions {
   maxSteps?: number;
   /** Environment UUID to restore from */
   restoreFromEnvironmentId?: string;
+  /** Agent session type */
+  agentSessionType?: AgentSessionType;
+  /** External CDP WebSocket URL (required for external-cdp session type) */
+  cdpUrl?: string;
 }
 
 export interface SessionResponse {
@@ -78,6 +91,8 @@ export interface SessionResponse {
   environmentId?: string;
   /** Task goal */
   goal?: string;
+  /** Agent session type */
+  agentSessionType?: string;
 }
 
 export interface ExecuteStatusResponse {
@@ -173,4 +188,48 @@ export interface StreamOptions {
   sanitize?: boolean;
   /** Include historical events */
   includeHistory?: boolean;
+}
+
+// ===== DESKTOP AGENT TYPES =====
+
+export type DesktopActionType =
+  | 'click'
+  | 'type'
+  | 'scroll'
+  | 'hotkey'
+  | 'drag'
+  | 'wait'
+  | 'finished'
+  | 'await_user_input';
+
+export interface DesktopAction {
+  /** Action type */
+  type: DesktopActionType | string;
+  /** Additional action properties (x, y, text, direction, etc.) */
+  [key: string]: unknown;
+}
+
+export interface StepDesktopRequest {
+  /** Base64-encoded screenshot (full resolution). Viewport dimensions are extracted from the image. */
+  screenshot: string;
+  /** Optional user message (e.g., initial goal or follow-up instruction) */
+  message?: string;
+}
+
+export interface StepDesktopResponse {
+  /** Actions to execute (flat format) */
+  actions: DesktopAction[];
+  /** Model reasoning */
+  thinking?: string;
+  /** Whether the task is complete */
+  finished: boolean;
+  /** Question for user, if any */
+  askUser?: string;
+  /** Current step number */
+  step: number;
+}
+
+export interface ModelsResponse {
+  /** Available agent models */
+  models: string[];
 }

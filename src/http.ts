@@ -88,6 +88,59 @@ export class HTTPClient {
   }
 
   /**
+   * Make an HTTP request to an absolute URL with retries and error handling
+   */
+  async requestUrl<T>(method: string, url: string, options?: RequestOptions): Promise<T> {
+    const headers = this.buildHeaders(options?.headers);
+
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+        const response = await fetch(url, {
+          method,
+          headers,
+          body: options?.json ? JSON.stringify(options.json) : undefined,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        // Handle errors
+        if (!response.ok) {
+          await this.handleErrorResponse(response);
+        }
+
+        // Parse JSON response
+        const data = await response.json();
+        return data as T;
+      } catch (error) {
+        lastError = error as Error;
+
+        // Don't retry on client errors (4xx except 429)
+        if (error instanceof AGIError && error.statusCode && error.statusCode < 500) {
+          if (error.statusCode !== 429) {
+            throw error;
+          }
+        }
+
+        // Don't retry on abort/timeout on last attempt
+        if (attempt === this.maxRetries) {
+          break;
+        }
+
+        // Exponential backoff
+        await this.sleep(Math.pow(2, attempt) * 1000);
+      }
+    }
+
+    throw lastError || new AGIError('Request failed after retries');
+  }
+
+  /**
    * Stream Server-Sent Events from an endpoint
    */
   async *streamEvents(path: string, query?: Record<string, string>): AsyncGenerator<SSEEvent> {
