@@ -185,20 +185,21 @@ export class AgentLoop {
     let result: StepDesktopResponse | null = null;
 
     try {
-      while (this._state === 'running') {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
         // Wait if paused
         if (this.pausePromise) {
           await this.pausePromise;
         }
 
-        // Check state after potential pause
-        if (this._state !== 'running' && this._state !== 'paused') {
-          break;
+        // Check state after potential pause (state may have changed during await)
+        // Use explicit type to prevent TypeScript narrowing (state can change externally via stop/pause)
+        const currentState = this._state as LoopState;
+        if (currentState === 'paused') {
+          continue; // Keep waiting
         }
-
-        // If still paused, continue waiting
-        if (this._state === 'paused') {
-          continue;
+        if (currentState !== 'running') {
+          break; // stopped/finished/idle - exit loop
         }
 
         // Capture screenshot
