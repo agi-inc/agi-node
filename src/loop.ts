@@ -43,8 +43,8 @@ export type OnStepFn = (step: number, response: StepDesktopResponse) => void;
 export interface AgentLoopOptions {
   /** AGIClient instance */
   client: AGIClient;
-  /** Agent service URL from session.agentUrl */
-  agentUrl: string;
+  /** Session UUID */
+  sessionId: string;
   /** Async callback that returns base64-encoded screenshot */
   captureScreenshot: CaptureScreenshotFn;
   /** Async callback that executes a list of actions */
@@ -88,7 +88,7 @@ export interface AgentLoopOptions {
  * // Create and run loop
  * const loop = new AgentLoop({
  *   client,
- *   agentUrl: session.agentUrl!,
+ *   sessionId: session.sessionId,
  *   captureScreenshot: async () => {
  *     // Return base64-encoded screenshot
  *     return '...';
@@ -122,7 +122,7 @@ export interface AgentLoopOptions {
  */
 export class AgentLoop {
   private readonly client: AGIClient;
-  private readonly agentUrl: string;
+  private readonly sessionId: string;
   private readonly captureScreenshot: CaptureScreenshotFn;
   private readonly executeActions: ExecuteActionsFn;
   private readonly onThinking?: OnThinkingFn;
@@ -140,7 +140,7 @@ export class AgentLoop {
 
   constructor(options: AgentLoopOptions) {
     this.client = options.client;
-    this.agentUrl = options.agentUrl;
+    this.sessionId = options.sessionId;
     this.captureScreenshot = options.captureScreenshot;
     this.executeActions = options.executeActions;
     this.onThinking = options.onThinking;
@@ -191,13 +191,15 @@ export class AgentLoop {
           await this.pausePromise;
         }
 
-        // Check state after potential pause
-        if (this._state !== 'running' && this._state !== 'paused') {
+        // Check state after potential pause - _state can change during await
+        // Use type cast since TS narrowing doesn't account for async mutations
+        const currentState = this._state as LoopState;
+        if (currentState !== 'running' && currentState !== 'paused') {
           break;
         }
 
         // If still paused, continue waiting
-        if (this._state === 'paused') {
+        if (currentState === 'paused') {
           continue;
         }
 
@@ -205,7 +207,7 @@ export class AgentLoop {
         const screenshot = await this.captureScreenshot();
 
         // Call step
-        result = await this.client.sessions.step(this.agentUrl, screenshot, currentMessage);
+        result = await this.client.sessions.step(this.sessionId, screenshot, currentMessage);
         currentMessage = undefined; // Only send message on first call
         this._lastResult = result;
         this._currentStep = result.step;

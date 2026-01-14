@@ -46,7 +46,7 @@ export class SessionsResource {
    *   agentSessionType: 'desktop',
    *   goal: 'Open calculator and compute 2+2'
    * });
-   * console.log(session.agentUrl); // Use with client.desktop.step()
+   * console.log(session.sessionId); // Use with client.sessions.step()
    * ```
    */
   async create(
@@ -385,15 +385,15 @@ export class SessionsResource {
   // ===== CLIENT-DRIVEN SESSION CONTROL =====
 
   /**
-   * Execute a single step for client-driven sessions (desktop mode).
+   * Execute a single step for client-driven sessions (desktop, quantum, android).
    *
-   * In desktop mode (agentSessionType="desktop"), the client manages the
-   * execution loop. This method sends a screenshot to the agent and receives
-   * actions to execute locally.
+   * For stateless sessions, the client manages the execution loop. This method
+   * sends a screenshot to the agent and receives actions to execute locally.
    *
-   * @param agentUrl - Agent service URL from session.agentUrl
+   * @param sessionId - Session UUID
    * @param screenshot - Base64-encoded screenshot (full resolution, JPEG or PNG)
    * @param message - Optional user message (goal on first call, or follow-up instruction)
+   * @param options - Optional OS and screen dimension info
    * @returns StepDesktopResponse with actions, thinking, finished, askUser, and step
    *
    * @example
@@ -408,7 +408,7 @@ export class SessionsResource {
    * let finished = false;
    * while (!finished) {
    *   const screenshot = captureScreenshot(); // Client captures
-   *   const result = await client.sessions.step(session.agentUrl!, screenshot);
+   *   const result = await client.sessions.step(session.sessionId, screenshot);
    *   executeActions(result.actions); // Client executes
    *   finished = result.finished;
    *   if (result.askUser) {
@@ -419,20 +419,35 @@ export class SessionsResource {
    * ```
    */
   async step(
-    agentUrl: string,
+    sessionId: string,
     screenshot: string,
-    message?: string
+    message?: string,
+    options?: {
+      os?: string;
+      screenWidth?: number;
+      screenHeight?: number;
+    }
   ): Promise<StepDesktopResponse> {
-    const url = `${agentUrl.replace(/\/$/, '')}/step_desktop`;
     const payload: Record<string, unknown> = { screenshot };
 
     if (message !== undefined) {
       payload.message = message;
     }
+    if (options?.os !== undefined) {
+      payload.os = options.os;
+    }
+    if (options?.screenWidth !== undefined) {
+      payload.screen_width = options.screenWidth;
+    }
+    if (options?.screenHeight !== undefined) {
+      payload.screen_height = options.screenHeight;
+    }
 
-    const response = await this.http.requestUrl<Record<string, unknown>>('POST', url, {
-      json: payload,
-    });
+    const response = await this.http.request<Record<string, unknown>>(
+      'POST',
+      `/v1/sessions/${sessionId}/step`,
+      { json: payload }
+    );
 
     return {
       actions: (response.actions || []) as StepDesktopResponse['actions'],
