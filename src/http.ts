@@ -239,10 +239,13 @@ export class HTTPClient {
   private async handleErrorResponse(response: Response): Promise<never> {
     let errorData: Record<string, unknown> | string | undefined;
 
+    // Read body as text first, then try to parse as JSON
+    // This avoids the "body already consumed" error
+    const text = await response.text();
     try {
-      errorData = (await response.json()) as Record<string, unknown>;
+      errorData = JSON.parse(text) as Record<string, unknown>;
     } catch {
-      errorData = await response.text();
+      errorData = text;
     }
 
     const errorMessage =
