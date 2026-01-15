@@ -418,11 +418,7 @@ export class SessionsResource {
    * }
    * ```
    */
-  async step(
-    agentUrl: string,
-    screenshot: string,
-    message?: string
-  ): Promise<StepDesktopResponse> {
+  async step(agentUrl: string, screenshot: string, message?: string): Promise<StepDesktopResponse> {
     const url = `${agentUrl.replace(/\/$/, '')}/step_desktop`;
     const payload: Record<string, unknown> = { screenshot };
 
