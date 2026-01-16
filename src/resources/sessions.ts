@@ -392,6 +392,7 @@ export class SessionsResource {
    * actions to execute locally.
    *
    * @param agentUrl - Agent service URL from session.agentUrl
+   * @param sessionId - Session ID (required for routing in shared sandbox)
    * @param screenshot - Base64-encoded screenshot (full resolution, JPEG or PNG)
    * @param message - Optional user message (goal on first call, or follow-up instruction)
    * @returns StepDesktopResponse with actions, thinking, finished, askUser, and step
@@ -408,7 +409,11 @@ export class SessionsResource {
    * let finished = false;
    * while (!finished) {
    *   const screenshot = captureScreenshot(); // Client captures
-   *   const result = await client.sessions.step(session.agentUrl!, screenshot);
+   *   const result = await client.sessions.step(
+   *     session.agentUrl!,
+   *     session.sessionId,
+   *     screenshot
+   *   );
    *   executeActions(result.actions); // Client executes
    *   finished = result.finished;
    *   if (result.askUser) {
@@ -418,9 +423,14 @@ export class SessionsResource {
    * }
    * ```
    */
-  async step(agentUrl: string, screenshot: string, message?: string): Promise<StepDesktopResponse> {
+  async step(
+    agentUrl: string,
+    sessionId: string,
+    screenshot: string,
+    message?: string
+  ): Promise<StepDesktopResponse> {
     const url = `${agentUrl.replace(/\/$/, '')}/step_desktop`;
-    const payload: Record<string, unknown> = { screenshot };
+    const payload: Record<string, unknown> = { screenshot, session_id: sessionId };
 
     if (message !== undefined) {
       payload.message = message;

@@ -45,6 +45,8 @@ export interface AgentLoopOptions {
   client: AGIClient;
   /** Agent service URL from session.agentUrl */
   agentUrl: string;
+  /** Session ID (required for routing in shared sandbox) */
+  sessionId: string;
   /** Async callback that returns base64-encoded screenshot */
   captureScreenshot: CaptureScreenshotFn;
   /** Async callback that executes a list of actions */
@@ -123,6 +125,7 @@ export interface AgentLoopOptions {
 export class AgentLoop {
   private readonly client: AGIClient;
   private readonly agentUrl: string;
+  private readonly sessionId: string;
   private readonly captureScreenshot: CaptureScreenshotFn;
   private readonly executeActions: ExecuteActionsFn;
   private readonly onThinking?: OnThinkingFn;
@@ -141,6 +144,7 @@ export class AgentLoop {
   constructor(options: AgentLoopOptions) {
     this.client = options.client;
     this.agentUrl = options.agentUrl;
+    this.sessionId = options.sessionId;
     this.captureScreenshot = options.captureScreenshot;
     this.executeActions = options.executeActions;
     this.onThinking = options.onThinking;
@@ -206,7 +210,7 @@ export class AgentLoop {
         const screenshot = await this.captureScreenshot();
 
         // Call step
-        result = await this.client.sessions.step(this.agentUrl, screenshot, currentMessage);
+        result = await this.client.sessions.step(this.agentUrl, this.sessionId, screenshot, currentMessage);
         currentMessage = undefined; // Only send message on first call
         this._lastResult = result;
         this._currentStep = result.step;
