@@ -352,6 +352,77 @@ const session = await client.createSession('agi-0', {
 
 </details>
 
+<details>
+<summary><b>Client-Driven Sessions</b> – Run agents on desktop, mobile, or custom environments</summary>
+
+<br />
+
+For scenarios where you control the execution environment (desktop automation, mobile apps, custom browsers), use client-driven sessions with `AgentLoop`:
+
+```typescript
+import { AGIClient, AgentLoop } from 'agi';
+
+const client = new AGIClient({ apiKey: process.env.AGI_API_KEY });
+
+// Create a client-driven session
+const session = await client.sessions.create('agi-2-claude', {
+  agentSessionType: 'desktop',
+  goal: 'Open calculator and compute 2+2',
+});
+
+// Create and run the loop
+const loop = new AgentLoop({
+  client,
+  agentUrl: session.agentUrl!,
+  captureScreenshot: async () => {
+    // Return base64-encoded screenshot from your environment
+    return '...';
+  },
+  executeActions: async (actions) => {
+    for (const action of actions) {
+      console.log(`Executing: ${action.type}`);
+      // Execute action in your environment
+    }
+  },
+  onThinking: (t) => console.log(`💭 ${t}`),
+});
+
+const result = await loop.start();
+console.log(`Finished: ${result.finished}`);
+```
+
+**Loop Control:**
+
+```typescript
+// Start without awaiting
+const promise = loop.start();
+
+// Pause/resume/stop
+loop.pause(); // Pause after current step
+loop.resume(); // Continue execution
+loop.stop(); // Stop the loop
+
+// Check state
+loop.state; // 'running', 'paused', 'stopped', 'finished'
+loop.currentStep; // Current step number
+loop.lastResult; // Last StepDesktopResponse
+```
+
+**Manual Step Control:**
+
+```typescript
+// Or manage the loop yourself
+let finished = false;
+while (!finished) {
+  const screenshot = await captureScreenshot();
+  const result = await client.sessions.step(session.agentUrl!, screenshot);
+  await executeActions(result.actions);
+  finished = result.finished;
+}
+```
+
+</details>
+
 ---
 
 ## Error Handling
