@@ -13,12 +13,7 @@ export type SnapshotMode = 'none' | 'memory' | 'filesystem';
 
 // ===== AGENT SESSION TYPES =====
 
-export type AgentSessionType =
-  | 'managed-cdp'
-  | 'external-cdp'
-  | 'desktop'
-  | 'quantum-0-3-x'
-  | 'android';
+export type AgentSessionType = 'managed-cdp' | 'external-cdp' | 'desktop';
 
 // ===== SESSION STATUS & EVENTS =====
 

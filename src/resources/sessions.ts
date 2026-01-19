@@ -454,9 +454,8 @@ export class SessionsResource {
   /**
    * List available agent models.
    *
-   * @param filter - Optional filter: "cdp" for browser agents, "quantum" for
-   *                 quantum protocol agents, "desktop" for desktop agents,
-   *                 "android" for Android agents
+   * @param filter - Optional filter: "cdp" for browser agents, "desktop" for
+   *                 desktop agents
    * @returns ModelsResponse with list of available model names
    *
    * @example
