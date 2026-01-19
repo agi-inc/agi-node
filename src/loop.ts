@@ -210,7 +210,12 @@ export class AgentLoop {
         const screenshot = await this.captureScreenshot();
 
         // Call step
-        result = await this.client.sessions.step(this.agentUrl, this.sessionId, screenshot, currentMessage);
+        result = await this.client.sessions.step(
+          this.agentUrl,
+          this.sessionId,
+          screenshot,
+          currentMessage
+        );
         currentMessage = undefined; // Only send message on first call
         this._lastResult = result;
         this._currentStep = result.step;
