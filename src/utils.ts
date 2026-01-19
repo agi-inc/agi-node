@@ -28,5 +28,6 @@ export function normalizeSessionResponse(data: Record<string, unknown>): Session
     createdAt: (data.created_at ?? data.createdAt) as string,
     environmentId: (data.environment_id ?? data.environmentId) as string | undefined,
     goal: data.goal as string | undefined,
+    agentSessionType: (data.agent_session_type ?? data.agentSessionType) as string | undefined,
   };
 }
