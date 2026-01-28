@@ -357,7 +357,7 @@ const session = await client.createSession('agi-0', {
 
 <br />
 
-> **Note:** Desktop mode is currently feature-gated. For enterprise access, contact [partner@theagi.company](mailto:partner@theagi.company).
+> **Note:** Desktop mode is currently feature-gated. For enterprise access, contact [`partner@theagi.company`](mailto:partner@theagi.company).
 
 For scenarios where you control the execution environment (desktop automation, mobile apps, custom browsers), use client-driven sessions with `AgentLoop`:
 
