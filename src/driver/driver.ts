@@ -8,7 +8,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import { createInterface, Interface } from 'readline';
-import { findBinaryPath } from './binary';
+import { findBinaryPath, getPythonFallback } from './binary';
 import {
   DriverEvent,
   DriverState,
@@ -80,7 +80,8 @@ export interface DriverResult {
  * ```
  */
 export class AgentDriver extends EventEmitter {
-  private readonly binaryPath: string;
+  private readonly binaryPath: string | null;
+  private readonly pythonFallback: { command: string; args: string[] } | null;
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
   private readonly env: Record<string, string>;
@@ -100,7 +101,25 @@ export class AgentDriver extends EventEmitter {
 
   constructor(options: DriverOptions = {}) {
     super();
-    this.binaryPath = options.binaryPath ?? findBinaryPath();
+
+    // Try to find binary, fall back to Python if available
+    let binaryPath: string | null = null;
+    try {
+      binaryPath = options.binaryPath ?? findBinaryPath();
+    } catch {
+      // Binary not found, try Python fallback
+    }
+
+    this.binaryPath = binaryPath;
+    this.pythonFallback = binaryPath ? null : getPythonFallback();
+
+    if (!this.binaryPath && !this.pythonFallback) {
+      throw new Error(
+        'Could not find agi-driver binary and Python fallback is not available. ' +
+        'Set AGI_DRIVER_PATH to the agi_driver source directory for development.'
+      );
+    }
+
     this.model = options.model ?? 'claude-sonnet';
     this.platform = options.platform ?? 'desktop';
     this.env = options.env ?? {};
@@ -160,13 +179,28 @@ export class AgentDriver extends EventEmitter {
       this.rejectStart = reject;
 
       // Spawn the driver process
-      this.process = spawn(this.binaryPath, [], {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: {
-          ...process.env,
-          ...this.env,
-        },
-      });
+      if (this.binaryPath) {
+        this.process = spawn(this.binaryPath, [], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: {
+            ...process.env,
+            ...this.env,
+          },
+        });
+      } else if (this.pythonFallback) {
+        this.process = spawn(this.pythonFallback.command, this.pythonFallback.args, {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: {
+            ...process.env,
+            ...this.env,
+            PYTHONPATH: process.env.AGI_DRIVER_PATH ? `${process.env.AGI_DRIVER_PATH}/..` : '',
+          },
+          cwd: process.env.AGI_DRIVER_PATH ? `${process.env.AGI_DRIVER_PATH}/..` : undefined,
+        });
+      } else {
+        reject(new Error('No binary or Python fallback available'));
+        return;
+      }
 
       // Handle process errors
       this.process.on('error', (err) => {

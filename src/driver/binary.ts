@@ -7,7 +7,13 @@
 
 import { existsSync } from 'fs';
 import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { platform, arch } from 'os';
+import { createRequire } from 'module';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
 
 /**
  * Platform identifier for binary selection.
@@ -73,6 +79,34 @@ function getSearchPaths(platformId: PlatformId): string[] {
   }
 
   return paths;
+}
+
+/**
+ * Check if we can use Python to run the driver module directly.
+ * This is a development fallback when the binary isn't compiled.
+ */
+export function canUsePythonFallback(): boolean {
+  // Check if AGI_DRIVER_PATH points to a Python module
+  const driverPath = process.env.AGI_DRIVER_PATH;
+  if (driverPath && existsSync(join(driverPath, '__main__.py'))) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Get the Python fallback command and args.
+ * Returns null if not available.
+ */
+export function getPythonFallback(): { command: string; args: string[] } | null {
+  const driverPath = process.env.AGI_DRIVER_PATH;
+  if (driverPath && existsSync(join(driverPath, '__main__.py'))) {
+    return {
+      command: process.env.PYTHON_PATH || 'python',
+      args: ['-m', 'agi_driver'],
+    };
+  }
+  return null;
 }
 
 /**
