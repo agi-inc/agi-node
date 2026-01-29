@@ -12,7 +12,7 @@ import { findBinaryPath } from './binary';
 import {
   DriverEvent,
   DriverState,
-  DriverAction,
+
   StartCommand,
   ScreenshotCommand,
   StopCommand,
@@ -386,7 +386,7 @@ export class AgentDriver extends EventEmitter {
         this.emit('action', event.action, event);
         break;
 
-      case 'confirm':
+      case 'confirm': {
         this.state = 'waiting_confirmation';
         // Try to get response from listener
         const confirmListeners = this.listeners('confirm');
@@ -401,8 +401,9 @@ export class AgentDriver extends EventEmitter {
           }
         }
         break;
+      }
 
-      case 'ask_question':
+      case 'ask_question': {
         this.state = 'waiting_answer';
         // Try to get response from listener
         const questionListeners = this.listeners('ask_question');
@@ -417,6 +418,7 @@ export class AgentDriver extends EventEmitter {
           }
         }
         break;
+      }
 
       case 'finished':
         this.handleFinished(event);
