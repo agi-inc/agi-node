@@ -68,3 +68,18 @@ export type {
 } from './types';
 
 export { Screenshot } from './types/screenshot';
+
+// Driver - local binary execution (spawns agi-driver binary)
+export {
+  AgentDriver,
+  type DriverOptions,
+  type DriverResult,
+  type DriverEvent,
+  type DriverAction,
+  type DriverState,
+  type DriverCommand,
+  findBinaryPath,
+  isBinaryAvailable,
+  getPlatformId,
+  type PlatformId,
+} from './driver';
