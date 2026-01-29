@@ -189,18 +189,54 @@ export interface StreamOptions {
 
 export type DesktopActionType =
   | 'click'
+  | 'double_click'
+  | 'triple_click'
+  | 'right_click'
+  | 'hover'
   | 'type'
+  | 'key'
   | 'scroll'
-  | 'hotkey'
   | 'drag'
   | 'wait'
-  | 'finished'
-  | 'await_user_input';
+  | 'finish'
+  | 'fail'
+  | 'confirm'
+  | 'ask_question';
 
 export interface DesktopAction {
   /** Action type */
   type: DesktopActionType | string;
-  /** Additional action properties (x, y, text, direction, etc.) */
+  /** X coordinate (for click, hover, scroll) */
+  x?: number;
+  /** Y coordinate (for click, hover, scroll) */
+  y?: number;
+  /** Text to type (for type action) */
+  text?: string;
+  /** Content to type (alias for text) */
+  content?: string;
+  /** Key or key combination (for key action) */
+  key?: string;
+  /** Scroll direction (for scroll action) */
+  direction?: 'up' | 'down' | 'left' | 'right';
+  /** Scroll amount in lines (for scroll action) */
+  amount?: number;
+  /** Wait duration in seconds (for wait action) */
+  duration?: number;
+  /** Start X coordinate (for drag action) */
+  start_x?: number;
+  /** Start Y coordinate (for drag action) */
+  start_y?: number;
+  /** End X coordinate (for drag action) */
+  end_x?: number;
+  /** End Y coordinate (for drag action) */
+  end_y?: number;
+  /** Summary message (for finish action) */
+  summary?: string;
+  /** Reason message (for fail action) */
+  reason?: string;
+  /** Question to ask (for ask_question action) */
+  question?: string;
+  /** Additional action properties */
   [key: string]: unknown;
 }
 
