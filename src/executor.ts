@@ -547,14 +547,47 @@ async function executeWait(action: DesktopAction): Promise<boolean> {
 
 /**
  * Get the current screen size in physical pixels.
+ *
+ * On macOS, this returns the native resolution of the display
+ * (e.g., 2880x1800 for a Retina display), which matches what
+ * screenshot tools capture.
  */
 export async function getScreenSize(): Promise<{ width: number; height: number }> {
   if (platform === 'darwin') {
-    const { stdout } = await execAsync(
-      "osascript -e 'tell application \"Finder\" to get bounds of window of desktop'"
-    );
-    const [, , width, height] = stdout.trim().split(', ').map(Number);
-    return { width, height };
+    // Use system_profiler to get the actual display resolution
+    // This returns physical pixels, not logical/scaled resolution
+    try {
+      const { stdout } = await execAsync(
+        "system_profiler SPDisplaysDataType | grep Resolution | head -1"
+      );
+      // Output looks like: "Resolution: 2880 x 1800 Retina"
+      const match = stdout.match(/(\d+)\s*x\s*(\d+)/);
+      if (match) {
+        return { width: parseInt(match[1]), height: parseInt(match[2]) };
+      }
+    } catch {
+      // Fallback to JXA method
+    }
+
+    // Fallback: use NSScreen to get logical size and multiply by scale factor
+    const jxaScript = `
+      ObjC.import('Cocoa');
+      var screen = $.NSScreen.mainScreen;
+      var frame = screen.frame;
+      var scale = screen.backingScaleFactor;
+      JSON.stringify({
+        width: frame.size.width * scale,
+        height: frame.size.height * scale
+      });
+    `;
+    try {
+      const { stdout } = await execAsync(`osascript -l JavaScript -e '${jxaScript}'`);
+      const size = JSON.parse(stdout.trim());
+      return { width: Math.round(size.width), height: Math.round(size.height) };
+    } catch {
+      // Final fallback
+      return { width: 1920, height: 1080 };
+    }
   } else if (platform === 'win32') {
     const { stdout } = await execAsync(
       'powershell -Command "[System.Windows.Forms.Screen]::PrimaryScreen.Bounds | Select-Object Width,Height | ConvertTo-Json"'
