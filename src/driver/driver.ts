@@ -33,6 +33,8 @@ export interface DriverOptions {
   model?: string;
   /** Platform type (default: 'desktop') */
   platform?: 'desktop' | 'android';
+  /** "local" for autonomous mode, "" for legacy SDK-driven mode */
+  mode?: string;
   /** Environment variables to pass to the driver process */
   env?: Record<string, string>;
 }
@@ -83,6 +85,7 @@ export class AgentDriver extends EventEmitter {
   private readonly pythonFallback: { command: string; args: string[] } | null;
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
+  private readonly mode: string;
   private readonly env: Record<string, string>;
 
   private process: ChildProcess | null = null;
@@ -121,6 +124,7 @@ export class AgentDriver extends EventEmitter {
 
     this.model = options.model ?? 'claude-sonnet';
     this.platform = options.platform ?? 'desktop';
+    this.mode = options.mode ?? '';
     this.env = options.env ?? {};
   }
 
@@ -156,16 +160,18 @@ export class AgentDriver extends EventEmitter {
    * Start the agent with a goal.
    *
    * @param goal - The task for the agent to accomplish
-   * @param screenshot - Initial screenshot (base64-encoded)
-   * @param screenWidth - Screen width in pixels
-   * @param screenHeight - Screen height in pixels
+   * @param screenshot - Initial screenshot (base64-encoded). Not needed in local mode.
+   * @param screenWidth - Screen width in pixels. Not needed in local mode.
+   * @param screenHeight - Screen height in pixels. Not needed in local mode.
+   * @param mode - Override the mode set in DriverOptions.
    * @returns Promise that resolves when the agent finishes
    */
   async start(
     goal: string,
-    screenshot: string,
-    screenWidth: number,
-    screenHeight: number
+    screenshot: string = '',
+    screenWidth: number = 0,
+    screenHeight: number = 0,
+    mode?: string
   ): Promise<DriverResult> {
     if (this.process) {
       throw new Error('Driver is already running');
@@ -254,6 +260,7 @@ export class AgentDriver extends EventEmitter {
           screen_height: screenHeight,
           platform: this.platform,
           model: this.model,
+          mode: mode ?? this.mode,
         };
         this.sendCommand(startCmd);
       });
@@ -454,6 +461,10 @@ export class AgentDriver extends EventEmitter {
         }
         break;
       }
+
+      case 'screenshot_captured':
+        this.emit('screenshot_captured', event);
+        break;
 
       case 'finished':
         this.handleFinished(event);

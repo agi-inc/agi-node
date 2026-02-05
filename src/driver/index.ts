@@ -19,6 +19,7 @@ export {
   type AskQuestionEvent,
   type FinishedEvent,
   type ErrorEvent,
+  type ScreenshotCapturedEvent,
   type StartCommand,
   type ScreenshotCommand,
   type PauseCommand,

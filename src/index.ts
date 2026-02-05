@@ -83,6 +83,3 @@ export {
   getPlatformId,
   type PlatformId,
 } from './driver';
-
-// Executor - cross-platform action execution
-export { executeAction, executeActions, getScaleFactor, getScreenSize } from './executor';

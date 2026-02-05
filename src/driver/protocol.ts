@@ -15,7 +15,8 @@ export type EventType =
   | 'confirm'
   | 'ask_question'
   | 'finished'
-  | 'error';
+  | 'error'
+  | 'screenshot_captured';
 
 // Command types
 export type CommandType =
@@ -91,6 +92,16 @@ export interface ErrorEvent extends BaseEvent {
   recoverable: boolean;
 }
 
+/**
+ * Emitted in local mode when the driver captures a screenshot.
+ * Lightweight notification (no image data).
+ */
+export interface ScreenshotCapturedEvent extends BaseEvent {
+  event: 'screenshot_captured';
+  width: number;
+  height: number;
+}
+
 export type DriverEvent =
   | ReadyEvent
   | StateChangeEvent
@@ -99,7 +110,8 @@ export type DriverEvent =
   | ConfirmEvent
   | AskQuestionEvent
   | FinishedEvent
-  | ErrorEvent;
+  | ErrorEvent
+  | ScreenshotCapturedEvent;
 
 // Action type from the driver
 export interface DriverAction {
@@ -123,6 +135,8 @@ export interface StartCommand extends BaseCommand {
   screen_height: number;
   platform: 'desktop' | 'android';
   model: string;
+  /** "local" for autonomous mode, "" for legacy SDK-driven mode */
+  mode?: string;
 }
 
 export interface ScreenshotCommand extends BaseCommand {
