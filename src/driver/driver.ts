@@ -391,6 +391,7 @@ export class AgentDriver extends EventEmitter {
 
   private sendCommand(cmd: object): void {
     if (!this.process?.stdin) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const line = serializeCommand(cmd as any) + '\n';
     this.process.stdin.write(line);
   }
@@ -439,6 +440,7 @@ export class AgentDriver extends EventEmitter {
         let confirmHandled = false;
         for (const listener of confirmListeners) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const approved = await (listener as any)(event.reason, event);
             if (typeof approved === 'boolean' && !confirmHandled) {
               this.respondConfirm(approved);
@@ -458,6 +460,7 @@ export class AgentDriver extends EventEmitter {
         let questionHandled = false;
         for (const listener of questionListeners) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const answer = await (listener as any)(event.question, event);
             if (typeof answer === 'string' && !questionHandled) {
               this.respondAnswer(answer, event.question_id);
