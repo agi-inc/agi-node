@@ -524,10 +524,12 @@ export class AgentDriver extends EventEmitter {
       this.readline.close();
       this.readline = null;
     }
-    // Clear promise callbacks before killing process to prevent
-    // the 'exit' handler from rejecting an already-resolved promise
-    this.resolveStart = null;
-    this.rejectStart = null;
+    // Reject the start promise so callers don't hang forever
+    if (this.rejectStart) {
+      this.rejectStart(new Error('Driver stopped'));
+      this.rejectStart = null;
+      this.resolveStart = null;
+    }
     if (this.process) {
       this.process.kill();
       this.process = null;

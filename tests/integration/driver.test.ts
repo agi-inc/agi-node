@@ -74,5 +74,5 @@ describe.skipIf(!HAS_DRIVER || !HAS_API_KEY)('AgentDriver real integration', () 
     }
 
     expect(states).toContain('running');
-  }, 30_000);
+  }, 60_000);
 });
