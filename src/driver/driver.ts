@@ -428,8 +428,10 @@ export class AgentDriver extends EventEmitter {
 
       case 'confirm': {
         this.state = 'waiting_confirmation';
-        // Call listeners directly (not via emit) to capture return value for auto-response
-        const confirmListeners = this.listeners('confirm');
+        // Use rawListeners so once() wrappers are properly invoked and removed.
+        // Calling raw wrappers preserves standard EventEmitter once() semantics
+        // while also letting us capture return values for auto-response.
+        const confirmListeners = this.rawListeners('confirm');
         let confirmHandled = false;
         for (const listener of confirmListeners) {
           try {
@@ -447,8 +449,8 @@ export class AgentDriver extends EventEmitter {
 
       case 'ask_question': {
         this.state = 'waiting_answer';
-        // Call listeners directly (not via emit) to capture return value for auto-response
-        const questionListeners = this.listeners('ask_question');
+        // Use rawListeners so once() wrappers are properly invoked and removed.
+        const questionListeners = this.rawListeners('ask_question');
         let questionHandled = false;
         for (const listener of questionListeners) {
           try {
