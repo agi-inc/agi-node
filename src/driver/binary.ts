@@ -84,9 +84,12 @@ function getSearchPaths(platformId: PlatformId): string[] {
 /**
  * Check if we can use Python to run the driver module directly.
  * This is a development fallback when the binary isn't compiled.
+ *
+ * AGI_DRIVER_PATH must point to the `agi_driver` package directory itself
+ * (e.g., `/path/to/agi-api/src/agi_driver`). The parent directory is then
+ * added to PYTHONPATH so `python -m agi_driver` resolves correctly.
  */
 export function canUsePythonFallback(): boolean {
-  // Check if AGI_DRIVER_PATH points to a Python module
   const driverPath = process.env.AGI_DRIVER_PATH;
   if (driverPath && existsSync(join(driverPath, '__main__.py'))) {
     return true;
