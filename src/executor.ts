@@ -35,7 +35,9 @@ Install xdotool for your distribution:
   Fedora/RHEL:   sudo dnf install xdotool
   Arch Linux:    sudo pacman -S xdotool
   openSUSE:      sudo zypper install xdotool`;
-    throw new Error(`xdotool is required for Linux input simulation but was not found.${distroHints}`);
+    throw new Error(
+      `xdotool is required for Linux input simulation but was not found.${distroHints}`
+    );
   }
 }
 
@@ -62,7 +64,7 @@ export async function getScaleFactor(): Promise<number> {
     } else if (platform === 'win32') {
       // Windows: Get DPI scaling percentage
       const { stdout } = await execAsync(
-        "powershell -Command \"(Get-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop\\WindowMetrics' -Name AppliedDPI -ErrorAction SilentlyContinue).AppliedDPI\""
+        'powershell -Command "(Get-ItemProperty -Path \'HKCU:\\Control Panel\\Desktop\\WindowMetrics\' -Name AppliedDPI -ErrorAction SilentlyContinue).AppliedDPI"'
       );
       const dpi = parseInt(stdout.trim()) || 96;
       cachedScaleFactor = dpi / 96;
@@ -154,8 +156,10 @@ async function executeClick(action: DesktopAction): Promise<boolean> {
 
   if (platform === 'darwin') {
     const mouseButton = actionType === 'right_click' ? 'kCGMouseButtonRight' : 'kCGMouseButtonLeft';
-    const mouseDownEvent = actionType === 'right_click' ? 'kCGEventRightMouseDown' : 'kCGEventLeftMouseDown';
-    const mouseUpEvent = actionType === 'right_click' ? 'kCGEventRightMouseUp' : 'kCGEventLeftMouseUp';
+    const mouseDownEvent =
+      actionType === 'right_click' ? 'kCGEventRightMouseDown' : 'kCGEventLeftMouseDown';
+    const mouseUpEvent =
+      actionType === 'right_click' ? 'kCGEventRightMouseUp' : 'kCGEventLeftMouseUp';
     const clickCount = actionType === 'triple_click' ? 3 : actionType === 'double_click' ? 2 : 1;
 
     const jxaScript = `
@@ -195,7 +199,12 @@ public static extern void mouse_event(long dwFlags, long dx, long dy, long cButt
   } else {
     await ensureXdotool();
     const clickOpt = actionType === 'right_click' ? '3' : '1';
-    const repeat = actionType === 'triple_click' ? '--repeat 3' : actionType === 'double_click' ? '--repeat 2' : '';
+    const repeat =
+      actionType === 'triple_click'
+        ? '--repeat 3'
+        : actionType === 'double_click'
+          ? '--repeat 2'
+          : '';
     await execAsync(`xdotool mousemove ${x} ${y} click ${repeat} ${clickOpt}`);
   }
 
@@ -241,16 +250,27 @@ async function executeType(action: DesktopAction): Promise<boolean> {
   if (!text) return false;
 
   if (platform === 'darwin') {
-    const escaped = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    await execAsync(`osascript -e 'tell application "System Events" to keystroke "${escaped}"'`);
+    // Use JSON.stringify to safely encode the text, then decode in JXA
+    const jsonSafe = JSON.stringify(text);
+    const jxaScript = `
+      ObjC.import('Cocoa');
+      var app = Application('System Events');
+      app.keystroke(${jsonSafe});
+    `;
+    await execAsync(`osascript -l JavaScript -e '${jxaScript.replace(/'/g, "'\\''")}'`);
   } else if (platform === 'win32') {
-    const escaped = text.replace(/'/g, "''");
+    // Encode text as base64 to avoid any shell escaping issues
+    const base64Text = Buffer.from(text, 'utf-8').toString('base64');
     await execAsync(
-      `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${escaped}')"`
+      `powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $text = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64Text}')); [System.Windows.Forms.SendKeys]::SendWait($text)"`
     );
   } else {
     await ensureXdotool();
-    await execAsync(`xdotool type "${text}"`);
+    // Use xdotool's --delay flag and pass text via stdin to avoid shell injection
+    const { execFile } = await import('child_process');
+    const { promisify: promisifyLocal } = await import('util');
+    const execFileAsync = promisifyLocal(execFile);
+    await execFileAsync('xdotool', ['type', '--clearmodifiers', '--', text]);
   }
 
   return true;
@@ -440,7 +460,8 @@ async function executeScroll(action: DesktopAction): Promise<boolean> {
 
   if (platform === 'darwin') {
     const scrollDeltaY = direction === 'up' ? amount * 10 : direction === 'down' ? -amount * 10 : 0;
-    const scrollDeltaX = direction === 'left' ? amount * 10 : direction === 'right' ? -amount * 10 : 0;
+    const scrollDeltaX =
+      direction === 'left' ? amount * 10 : direction === 'right' ? -amount * 10 : 0;
 
     const jxaScript = `
       ObjC.import('Cocoa');
@@ -558,7 +579,7 @@ export async function getScreenSize(): Promise<{ width: number; height: number }
     // This returns physical pixels, not logical/scaled resolution
     try {
       const { stdout } = await execAsync(
-        "system_profiler SPDisplaysDataType | grep Resolution | head -1"
+        'system_profiler SPDisplaysDataType | grep Resolution | head -1'
       );
       // Output looks like: "Resolution: 2880 x 1800 Retina"
       const match = stdout.match(/(\d+)\s*x\s*(\d+)/);

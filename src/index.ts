@@ -85,9 +85,4 @@ export {
 } from './driver';
 
 // Executor - cross-platform action execution
-export {
-  executeAction,
-  executeActions,
-  getScaleFactor,
-  getScreenSize,
-} from './executor';
+export { executeAction, executeActions, getScaleFactor, getScreenSize } from './executor';

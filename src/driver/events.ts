@@ -26,13 +26,19 @@ export interface DriverEventEmitter {
   on(event: 'thinking', listener: (text: string, event: ThinkingEvent) => void): this;
   on(event: 'action', listener: (action: DriverAction, event: ActionEvent) => void): this;
   on(event: 'confirm', listener: (reason: string, event: ConfirmEvent) => Promise<boolean>): this;
-  on(event: 'ask_question', listener: (question: string, event: AskQuestionEvent) => Promise<string>): this;
+  on(
+    event: 'ask_question',
+    listener: (question: string, event: AskQuestionEvent) => Promise<string>
+  ): this;
   on(event: 'finished', listener: (event: FinishedEvent) => void): this;
   on(event: 'error', listener: (event: ErrorEvent) => void): this;
   on(event: 'event', listener: (event: DriverEvent) => void): this;
 
   once(event: 'ready', listener: (event: ReadyEvent) => void): this;
-  once(event: 'state_change', listener: (state: DriverState, event: StateChangeEvent) => void): this;
+  once(
+    event: 'state_change',
+    listener: (state: DriverState, event: StateChangeEvent) => void
+  ): this;
   once(event: 'finished', listener: (event: FinishedEvent) => void): this;
   once(event: 'error', listener: (event: ErrorEvent) => void): this;
   once(event: 'event', listener: (event: DriverEvent) => void): this;

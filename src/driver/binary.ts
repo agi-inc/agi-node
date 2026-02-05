@@ -6,7 +6,7 @@
  */
 
 import { existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, delimiter } from 'path';
 import { fileURLToPath } from 'url';
 import { platform, arch } from 'os';
 import { createRequire } from 'module';
@@ -18,7 +18,7 @@ const require = createRequire(import.meta.url);
 /**
  * Platform identifier for binary selection.
  */
-export type PlatformId = 'darwin-arm64' | 'darwin-x64' | 'linux-x64' | 'windows-x64';
+export type PlatformId = 'darwin-arm64' | 'darwin-x64' | 'linux-x64' | 'win32-x64';
 
 /**
  * Get the current platform identifier.
@@ -32,7 +32,7 @@ export function getPlatformId(): PlatformId {
   } else if (os === 'linux') {
     return 'linux-x64';
   } else if (os === 'win32') {
-    return 'windows-x64';
+    return 'win32-x64';
   }
 
   throw new Error(`Unsupported platform: ${os}-${cpu}`);
@@ -43,7 +43,7 @@ export function getPlatformId(): PlatformId {
  */
 export function getBinaryFilename(platformId?: PlatformId): string {
   const id = platformId ?? getPlatformId();
-  if (id === 'windows-x64') {
+  if (id === 'win32-x64') {
     return 'agi-driver.exe';
   }
   return 'agi-driver';
@@ -72,7 +72,7 @@ function getSearchPaths(platformId: PlatformId): string[] {
 
   // 3. Global installation (in PATH)
   const envPath = process.env.PATH || '';
-  for (const dir of envPath.split(':')) {
+  for (const dir of envPath.split(delimiter)) {
     if (dir) {
       paths.push(join(dir, filename));
     }
