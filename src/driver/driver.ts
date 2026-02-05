@@ -93,6 +93,8 @@ export class AgentDriver extends EventEmitter {
   private state: DriverState = 'idle';
   private step = 0;
   private sessionId = '';
+  private screenWidth = 0;
+  private screenHeight = 0;
 
   private resolveStart: ((result: DriverResult) => void) | null = null;
   private rejectStart: ((error: Error) => void) | null = null;
@@ -178,6 +180,8 @@ export class AgentDriver extends EventEmitter {
     }
 
     this.sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    this.screenWidth = screenWidth;
+    this.screenHeight = screenHeight;
 
     return new Promise((resolve, reject) => {
       this.resolveStart = resolve;
@@ -282,8 +286,8 @@ export class AgentDriver extends EventEmitter {
     const cmd: ScreenshotCommand = {
       command: 'screenshot',
       data: screenshot,
-      screen_width: screenWidth ?? 0,
-      screen_height: screenHeight ?? 0,
+      screen_width: screenWidth ?? this.screenWidth,
+      screen_height: screenHeight ?? this.screenHeight,
     };
     this.sendCommand(cmd);
   }
