@@ -428,17 +428,18 @@ export class AgentDriver extends EventEmitter {
 
       case 'confirm': {
         this.state = 'waiting_confirmation';
-        this.emit('confirm', event.reason, event);
-        // Try to get auto-response from listener
+        // Call listeners directly (not via emit) to capture return value for auto-response
         const confirmListeners = this.listeners('confirm');
-        if (confirmListeners.length > 0) {
+        let confirmHandled = false;
+        for (const listener of confirmListeners) {
           try {
-            const approved = await (confirmListeners[0] as any)(event.reason, event);
-            if (typeof approved === 'boolean') {
+            const approved = await (listener as any)(event.reason, event);
+            if (typeof approved === 'boolean' && !confirmHandled) {
               this.respondConfirm(approved);
+              confirmHandled = true;
             }
           } catch {
-            // Listener didn't respond, wait for manual response
+            // Listener didn't respond, continue
           }
         }
         break;
@@ -446,17 +447,18 @@ export class AgentDriver extends EventEmitter {
 
       case 'ask_question': {
         this.state = 'waiting_answer';
-        this.emit('ask_question', event.question, event);
-        // Try to get auto-response from listener
+        // Call listeners directly (not via emit) to capture return value for auto-response
         const questionListeners = this.listeners('ask_question');
-        if (questionListeners.length > 0) {
+        let questionHandled = false;
+        for (const listener of questionListeners) {
           try {
-            const answer = await (questionListeners[0] as any)(event.question, event);
-            if (typeof answer === 'string') {
+            const answer = await (listener as any)(event.question, event);
+            if (typeof answer === 'string' && !questionHandled) {
               this.respondAnswer(answer, event.question_id);
+              questionHandled = true;
             }
           } catch {
-            // Listener didn't respond, wait for manual response
+            // Listener didn't respond, continue
           }
         }
         break;
@@ -513,6 +515,10 @@ export class AgentDriver extends EventEmitter {
       this.readline.close();
       this.readline = null;
     }
+    // Clear promise callbacks before killing process to prevent
+    // the 'exit' handler from rejecting an already-resolved promise
+    this.resolveStart = null;
+    this.rejectStart = null;
     if (this.process) {
       this.process.kill();
       this.process = null;
