@@ -24,6 +24,7 @@
     "test": "vitest run tests/unit",
     "test:watch": "vitest",
     "test:smoke": "AGI_API_KEY=f94a74fa-bcdf-429f-97b0-37b7a1df6ab2 vitest run tests/smoke-simple.test.ts --reporter=verbose",
+    "test:integration": "vitest run tests/integration --reporter=verbose",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"examples/**/*.ts\"",
