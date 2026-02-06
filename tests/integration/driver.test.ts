@@ -1,21 +1,19 @@
 /**
- * Integration tests for AgentDriver with real agi-driver from source.
+ * Integration tests for AgentDriver with the agi-driver binary.
  *
  * These tests require:
- *   - AGI_DRIVER_PATH: path to the agi_driver package directory
+ *   - agi-driver binary available (via @agi/agi-{platform} package or in PATH)
  *   - ANTHROPIC_API_KEY: valid Anthropic API key
  *
  * They spawn the real driver, communicate over JSON lines, and run
  * a real task with the Anthropic API.
  */
 
-import { existsSync } from 'fs';
-import { join } from 'path';
 import { describe, it, expect } from 'vitest';
 import { AgentDriver } from '../../src/driver/driver';
+import { isBinaryAvailable } from '../../src/driver/binary';
 
-const DRIVER_PATH = process.env.AGI_DRIVER_PATH || '';
-const HAS_DRIVER = !!DRIVER_PATH && existsSync(join(DRIVER_PATH, '__main__.py'));
+const HAS_DRIVER = isBinaryAvailable();
 const HAS_API_KEY = !!process.env.ANTHROPIC_API_KEY;
 
 describe.skipIf(!HAS_DRIVER || !HAS_API_KEY)('AgentDriver real integration', () => {
