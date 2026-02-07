@@ -58,6 +58,7 @@ export class SessionsResource {
       restoreFromEnvironmentId?: string;
       agentSessionType?: string;
       cdpUrl?: string;
+      environmentType?: string;
     }
   ): Promise<SessionResponse> {
     const payload: Record<string, unknown> = {
@@ -74,6 +75,7 @@ export class SessionsResource {
       payload.agent_session_type = options.agentSessionType;
     }
     if (options?.cdpUrl) payload.cdp_url = options.cdpUrl;
+    if (options?.environmentType) payload.environment_type = options.environmentType;
 
     const response = await this.http.request<Record<string, unknown>>('POST', '/v1/sessions', {
       json: payload,
