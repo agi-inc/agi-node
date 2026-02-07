@@ -33,8 +33,14 @@ export interface DriverOptions {
   model?: string;
   /** Platform type (default: 'desktop') */
   platform?: 'desktop' | 'android';
-  /** "local" for autonomous mode, "" for legacy SDK-driven mode */
+  /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
   mode?: string;
+  /** Agent name for the AGI API (e.g., "agi-2-claude") */
+  agentName?: string;
+  /** AGI API base URL (default: "https://api.agi.tech") */
+  apiUrl?: string;
+  /** Environment type for remote mode ("ubuntu-1" or "chrome-1") */
+  environmentType?: string;
   /** Environment variables to pass to the driver process */
   env?: Record<string, string>;
 }
@@ -85,6 +91,9 @@ export class AgentDriver extends EventEmitter {
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
   private readonly mode: string;
+  private readonly agentName: string;
+  private readonly apiUrl: string;
+  private readonly environmentType: string;
   private readonly env: Record<string, string>;
 
   private process: ChildProcess | null = null;
@@ -110,6 +119,9 @@ export class AgentDriver extends EventEmitter {
     this.model = options.model ?? 'claude-sonnet';
     this.platform = options.platform ?? 'desktop';
     this.mode = options.mode ?? '';
+    this.agentName = options.agentName ?? '';
+    this.apiUrl = options.apiUrl ?? '';
+    this.environmentType = options.environmentType ?? '';
     this.env = options.env ?? {};
   }
 
@@ -233,6 +245,9 @@ export class AgentDriver extends EventEmitter {
           platform: this.platform,
           model: this.model,
           mode: mode ?? this.mode,
+          agent_name: this.agentName || undefined,
+          api_url: this.apiUrl || undefined,
+          environment_type: this.environmentType || undefined,
         };
         this.sendCommand(startCmd);
       });
@@ -443,6 +458,10 @@ export class AgentDriver extends EventEmitter {
 
       case 'screenshot_captured':
         this.emit('screenshot_captured', event);
+        break;
+
+      case 'session_created':
+        this.emit('session_created', event);
         break;
 
       case 'finished':
