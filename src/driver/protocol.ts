@@ -16,7 +16,8 @@ export type EventType =
   | 'ask_question'
   | 'finished'
   | 'error'
-  | 'screenshot_captured';
+  | 'screenshot_captured'
+  | 'session_created';
 
 // Command types
 export type CommandType =
@@ -102,6 +103,17 @@ export interface ScreenshotCapturedEvent extends BaseEvent {
   height: number;
 }
 
+/**
+ * Emitted after the driver creates an API session.
+ */
+export interface SessionCreatedEvent extends BaseEvent {
+  event: 'session_created';
+  session_id: string;
+  agent_url: string;
+  environment_url?: string;
+  vnc_url?: string;
+}
+
 export type DriverEvent =
   | ReadyEvent
   | StateChangeEvent
@@ -111,7 +123,8 @@ export type DriverEvent =
   | AskQuestionEvent
   | FinishedEvent
   | ErrorEvent
-  | ScreenshotCapturedEvent;
+  | ScreenshotCapturedEvent
+  | SessionCreatedEvent;
 
 // Action type from the driver
 export interface DriverAction {
@@ -135,8 +148,14 @@ export interface StartCommand extends BaseCommand {
   screen_height: number;
   platform: 'desktop' | 'android';
   model: string;
-  /** "local" for autonomous mode, "" for legacy SDK-driven mode */
+  /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
   mode?: string;
+  /** Agent name for the AGI API (e.g., "agi-2-claude") */
+  agent_name?: string;
+  /** AGI API base URL (default: "https://api.agi.tech") */
+  api_url?: string;
+  /** Environment type for remote mode ("ubuntu-1" or "chrome-1") */
+  environment_type?: string;
 }
 
 export interface ScreenshotCommand extends BaseCommand {

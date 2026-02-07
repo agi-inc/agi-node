@@ -20,6 +20,7 @@ export {
   type FinishedEvent,
   type ErrorEvent,
   type ScreenshotCapturedEvent,
+  type SessionCreatedEvent,
   type StartCommand,
   type ScreenshotCommand,
   type PauseCommand,
