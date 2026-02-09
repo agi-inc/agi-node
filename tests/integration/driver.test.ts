@@ -58,7 +58,9 @@ describe.skipIf(!HAS_DRIVER || !HAS_API_KEY)('AgentDriver real integration', () 
     });
 
     driver.on('state_change', (state: string) => states.push(state));
-    driver.on('session_created', () => { sessionCreated = true; });
+    driver.on('session_created', () => {
+      sessionCreated = true;
+    });
     driver.on('error', (err: { message?: string }) => {
       if (err.message?.includes('503') || err.message?.includes('entrypoint')) {
         sessionError = err.message;
