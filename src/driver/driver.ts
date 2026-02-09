@@ -8,7 +8,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import { createInterface, Interface } from 'readline';
-import { findBinaryPath, getPythonFallback } from './binary';
+import { findBinaryPath } from './binary';
 import {
   DriverEvent,
   DriverState,
@@ -33,8 +33,14 @@ export interface DriverOptions {
   model?: string;
   /** Platform type (default: 'desktop') */
   platform?: 'desktop' | 'android';
-  /** "local" for autonomous mode, "" for legacy SDK-driven mode */
+  /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
   mode?: string;
+  /** Agent name for the AGI API (e.g., "agi-2-claude") */
+  agentName?: string;
+  /** AGI API base URL (default: "https://api.agi.tech") */
+  apiUrl?: string;
+  /** Environment type for remote mode ("ubuntu-1" or "chrome-1") */
+  environmentType?: string;
   /** Environment variables to pass to the driver process */
   env?: Record<string, string>;
 }
@@ -81,11 +87,13 @@ export interface DriverResult {
  * ```
  */
 export class AgentDriver extends EventEmitter {
-  private readonly binaryPath: string | null;
-  private readonly pythonFallback: { command: string; args: string[] } | null;
+  private readonly binaryPath: string;
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
   private readonly mode: string;
+  private readonly agentName: string;
+  private readonly apiUrl: string;
+  private readonly environmentType: string;
   private readonly env: Record<string, string>;
 
   private process: ChildProcess | null = null;
@@ -106,27 +114,14 @@ export class AgentDriver extends EventEmitter {
   constructor(options: DriverOptions = {}) {
     super();
 
-    // Try to find binary, fall back to Python if available
-    let binaryPath: string | null = null;
-    try {
-      binaryPath = options.binaryPath ?? findBinaryPath();
-    } catch {
-      // Binary not found, try Python fallback
-    }
-
-    this.binaryPath = binaryPath;
-    this.pythonFallback = binaryPath ? null : getPythonFallback();
-
-    if (!this.binaryPath && !this.pythonFallback) {
-      throw new Error(
-        'Could not find agi-driver binary and Python fallback is not available. ' +
-          'Set AGI_DRIVER_PATH to the agi_driver source directory for development.'
-      );
-    }
+    this.binaryPath = options.binaryPath ?? findBinaryPath();
 
     this.model = options.model ?? 'claude-sonnet';
     this.platform = options.platform ?? 'desktop';
     this.mode = options.mode ?? '';
+    this.agentName = options.agentName ?? '';
+    this.apiUrl = options.apiUrl ?? '';
+    this.environmentType = options.environmentType ?? '';
     this.env = options.env ?? {};
   }
 
@@ -188,28 +183,13 @@ export class AgentDriver extends EventEmitter {
       this.rejectStart = reject;
 
       // Spawn the driver process
-      if (this.binaryPath) {
-        this.process = spawn(this.binaryPath, [], {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env: {
-            ...process.env,
-            ...this.env,
-          },
-        });
-      } else if (this.pythonFallback) {
-        this.process = spawn(this.pythonFallback.command, this.pythonFallback.args, {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env: {
-            ...process.env,
-            ...this.env,
-            PYTHONPATH: process.env.AGI_DRIVER_PATH ? `${process.env.AGI_DRIVER_PATH}/..` : '',
-          },
-          cwd: process.env.AGI_DRIVER_PATH ? `${process.env.AGI_DRIVER_PATH}/..` : undefined,
-        });
-      } else {
-        reject(new Error('No binary or Python fallback available'));
-        return;
-      }
+      this.process = spawn(this.binaryPath, [], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          ...process.env,
+          ...this.env,
+        },
+      });
 
       // Handle process errors
       this.process.on('error', (err) => {
@@ -265,6 +245,9 @@ export class AgentDriver extends EventEmitter {
           platform: this.platform,
           model: this.model,
           mode: mode ?? this.mode,
+          agent_name: this.agentName || undefined,
+          api_url: this.apiUrl || undefined,
+          environment_type: this.environmentType || undefined,
         };
         this.sendCommand(startCmd);
       });
@@ -475,6 +458,10 @@ export class AgentDriver extends EventEmitter {
 
       case 'screenshot_captured':
         this.emit('screenshot_captured', event);
+        break;
+
+      case 'session_created':
+        this.emit('session_created', event);
         break;
 
       case 'finished':
