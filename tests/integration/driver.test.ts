@@ -98,14 +98,16 @@ describe.skipIf(!HAS_DRIVER || !HAS_API_KEY)('AgentDriver real integration', () 
 
     driver.on('state_change', (state: string) => states.push(state));
 
-    // Gate on first action event (always emitted) instead of thinking (not yet returned by API)
-    const gotAction = new Promise<void>((resolve) => {
-      driver.on('action', () => resolve());
+    // Gate on running state (always emitted after session creation)
+    const gotRunning = new Promise<void>((resolve) => {
+      driver.on('state_change', (state: string) => {
+        if (state === 'running') resolve();
+      });
     });
 
     const resultPromise = driver.start('Describe the screen', '', 0, 0, 'local');
 
-    await gotAction;
+    await gotRunning;
     await driver.stop('test complete');
 
     // Should resolve or reject without hanging
