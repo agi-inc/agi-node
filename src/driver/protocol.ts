@@ -205,11 +205,7 @@ export interface AgentIdentity {
 }
 
 // Tool choice configuration
-export type ToolChoice =
-  | 'auto'
-  | 'required'
-  | 'none'
-  | { type: 'tool'; name: string };
+export type ToolChoice = 'auto' | 'required' | 'none' | { type: 'tool'; name: string };
 
 // Base command interface
 export interface BaseCommand {
