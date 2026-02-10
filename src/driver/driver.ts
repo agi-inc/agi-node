@@ -534,6 +534,26 @@ export class AgentDriver extends EventEmitter {
         this.emit('session_created', event);
         break;
 
+      case 'audio_transcript':
+        this.emit('audio_transcript', event);
+        break;
+
+      case 'video_frame':
+        this.emit('video_frame', event);
+        break;
+
+      case 'speech_started':
+        this.emit('speech_started', event);
+        break;
+
+      case 'speech_finished':
+        this.emit('speech_finished', event);
+        break;
+
+      case 'turn_detected':
+        this.emit('turn_detected', event);
+        break;
+
       case 'finished':
         this.handleFinished(event);
         break;
