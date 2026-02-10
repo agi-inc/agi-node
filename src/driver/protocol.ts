@@ -226,7 +226,7 @@ export interface StartCommand extends BaseCommand {
   platform: 'desktop' | 'android';
   model: string;
   mode: '' | 'local' | 'remote';
-  agent_name: string;
+  agent_name?: string;
   api_url?: string;
   environment_type?: string;
 
@@ -263,19 +263,19 @@ export interface ResumeCommand extends BaseCommand {
 
 export interface StopCommand extends BaseCommand {
   command: 'stop';
-  reason: string;
+  reason?: string;
 }
 
 export interface ConfirmResponseCommand extends BaseCommand {
   command: 'confirm';
   approved: boolean;
-  message: string;
+  message?: string;
 }
 
 export interface AnswerCommand extends BaseCommand {
   command: 'answer';
   text: string;
-  question_id: string;
+  question_id?: string;
 }
 
 export interface GetAudioTranscriptCommand extends BaseCommand {
@@ -300,3 +300,18 @@ export type DriverCommand =
   | AnswerCommand
   | GetAudioTranscriptCommand
   | GetVideoFrameCommand;
+
+/**
+ * Parse a JSON line into a DriverEvent.
+ */
+export function parseEvent(line: string): DriverEvent {
+  const data = JSON.parse(line);
+  return data as DriverEvent;
+}
+
+/**
+ * Serialize a command to a JSON line.
+ */
+export function serializeCommand(command: DriverCommand): string {
+  return JSON.stringify(command);
+}

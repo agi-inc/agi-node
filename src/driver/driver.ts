@@ -34,7 +34,7 @@ export interface DriverOptions {
   /** Platform type (default: 'desktop') */
   platform?: 'desktop' | 'android';
   /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
-  mode?: string;
+  mode?: '' | 'local' | 'remote';
   /** Agent name for the AGI API (e.g., "agi-2-claude") */
   agentName?: string;
   /** AGI API base URL (default: "https://api.agi.tech") */
@@ -90,7 +90,7 @@ export class AgentDriver extends EventEmitter {
   private readonly binaryPath: string;
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
-  private readonly mode: string;
+  private readonly mode: '' | 'local' | 'remote';
   private readonly agentName: string;
   private readonly apiUrl: string;
   private readonly environmentType: string;
@@ -168,7 +168,7 @@ export class AgentDriver extends EventEmitter {
     screenshot: string = '',
     screenWidth: number = 0,
     screenHeight: number = 0,
-    mode?: string
+    mode?: '' | 'local' | 'remote'
   ): Promise<DriverResult> {
     if (this.process) {
       throw new Error('Driver is already running');
