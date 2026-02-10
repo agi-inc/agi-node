@@ -8,6 +8,9 @@
 import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import { createInterface, Interface } from 'readline';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
+import { homedir } from 'os';
 import { findBinaryPath } from './binary';
 import {
   DriverEvent,
@@ -34,7 +37,7 @@ export interface DriverOptions {
   /** Platform type (default: 'desktop') */
   platform?: 'desktop' | 'android';
   /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
-  mode?: string;
+  mode?: '' | 'local' | 'remote';
   /** Agent name for the AGI API (e.g., "agi-2-claude") */
   agentName?: string;
   /** AGI API base URL (default: "https://api.agi.tech") */
@@ -43,6 +46,18 @@ export interface DriverOptions {
   environmentType?: string;
   /** Environment variables to pass to the driver process */
   env?: Record<string, string>;
+
+  // Multimodal options
+  /** Enable voice input/output */
+  voice?: boolean;
+  /** Enable camera video feed */
+  camera?: boolean;
+  /** Enable screen recording */
+  screen?: boolean;
+  /** Enable MCP servers */
+  mcp?: boolean;
+  /** Path to MCP config file */
+  mcpConfig?: string;
 }
 
 /**
@@ -90,11 +105,18 @@ export class AgentDriver extends EventEmitter {
   private readonly binaryPath: string;
   private readonly model: string;
   private readonly platform: 'desktop' | 'android';
-  private readonly mode: string;
+  private readonly mode: '' | 'local' | 'remote';
   private readonly agentName: string;
   private readonly apiUrl: string;
   private readonly environmentType: string;
   private readonly env: Record<string, string>;
+
+  // Multimodal options
+  private readonly voice: boolean;
+  private readonly camera: boolean;
+  private readonly screen: boolean;
+  private readonly mcp: boolean;
+  private readonly mcpConfig: string;
 
   private process: ChildProcess | null = null;
   private readline: Interface | null = null;
@@ -111,6 +133,38 @@ export class AgentDriver extends EventEmitter {
   private pendingConfirm: ((approved: boolean, message?: string) => void) | null = null;
   private pendingAnswer: ((text: string) => void) | null = null;
 
+  /**
+   * Load MCP server configuration from file.
+   * @param configPath - Path to MCP config file (supports ~ expansion)
+   * @returns Array of MCP server configs, or undefined if file doesn't exist
+   */
+  private loadMcpConfig(configPath: string): any[] | undefined {
+    try {
+      // Expand ~ to home directory
+      const expandedPath = configPath.startsWith('~')
+        ? resolve(homedir(), configPath.slice(2))
+        : resolve(configPath);
+
+      if (!existsSync(expandedPath)) {
+        return undefined;
+      }
+
+      const content = readFileSync(expandedPath, 'utf-8');
+      const config = JSON.parse(content);
+
+      // Convert config object to array of MCPServerConfig
+      return Object.entries(config).map(([name, serverConfig]: [string, any]) => ({
+        name,
+        command: serverConfig.command,
+        args: serverConfig.args || [],
+        env: serverConfig.env || {},
+      }));
+    } catch (error) {
+      // If config loading fails, return undefined (MCP will be disabled)
+      return undefined;
+    }
+  }
+
   constructor(options: DriverOptions = {}) {
     super();
 
@@ -123,6 +177,13 @@ export class AgentDriver extends EventEmitter {
     this.apiUrl = options.apiUrl ?? '';
     this.environmentType = options.environmentType ?? '';
     this.env = options.env ?? {};
+
+    // Multimodal options
+    this.voice = options.voice ?? false;
+    this.camera = options.camera ?? false;
+    this.screen = options.screen ?? false;
+    this.mcp = options.mcp ?? false;
+    this.mcpConfig = options.mcpConfig ?? '~/.agi/mcp.json';
   }
 
   /**
@@ -168,7 +229,7 @@ export class AgentDriver extends EventEmitter {
     screenshot: string = '',
     screenWidth: number = 0,
     screenHeight: number = 0,
-    mode?: string
+    mode?: '' | 'local' | 'remote'
   ): Promise<DriverResult> {
     if (this.process) {
       throw new Error('Driver is already running');
@@ -248,6 +309,15 @@ export class AgentDriver extends EventEmitter {
           agent_name: this.agentName || undefined,
           api_url: this.apiUrl || undefined,
           environment_type: this.environmentType || undefined,
+
+          // Multimodal options
+          audio_input_enabled: this.voice,
+          turn_detection_enabled: this.voice,
+          speech_output_enabled: this.voice,
+          speech_voice: this.voice ? 'alloy' : undefined,
+          camera_enabled: this.camera,
+          screen_recording_enabled: this.screen,
+          mcp_servers: this.mcp ? this.loadMcpConfig(this.mcpConfig) : undefined,
         };
         this.sendCommand(startCmd);
       });
@@ -462,6 +532,26 @@ export class AgentDriver extends EventEmitter {
 
       case 'session_created':
         this.emit('session_created', event);
+        break;
+
+      case 'audio_transcript':
+        this.emit('audio_transcript', event);
+        break;
+
+      case 'video_frame':
+        this.emit('video_frame', event);
+        break;
+
+      case 'speech_started':
+        this.emit('speech_started', event);
+        break;
+
+      case 'speech_finished':
+        this.emit('speech_finished', event);
+        break;
+
+      case 'turn_detected':
+        this.emit('turn_detected', event);
         break;
 
       case 'finished':
