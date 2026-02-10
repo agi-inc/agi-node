@@ -17,7 +17,12 @@ export type EventType =
   | 'finished'
   | 'error'
   | 'screenshot_captured'
-  | 'session_created';
+  | 'session_created'
+  | 'audio_transcript'
+  | 'video_frame'
+  | 'speech_started'
+  | 'speech_finished'
+  | 'turn_detected';
 
 // Command types
 export type CommandType =
@@ -27,7 +32,9 @@ export type CommandType =
   | 'resume'
   | 'stop'
   | 'confirm'
-  | 'answer';
+  | 'answer'
+  | 'get_audio_transcript'
+  | 'get_video_frame';
 
 // Driver states
 export type DriverState =
@@ -114,6 +121,49 @@ export interface SessionCreatedEvent extends BaseEvent {
   vnc_url?: string;
 }
 
+/**
+ * Emitted when audio transcript is available.
+ */
+export interface AudioTranscriptEvent extends BaseEvent {
+  event: 'audio_transcript';
+  transcript: string;
+  seconds_ago: number;
+  duration: number;
+}
+
+/**
+ * Emitted when video frame is available.
+ */
+export interface VideoFrameEvent extends BaseEvent {
+  event: 'video_frame';
+  frame_base64: string;
+  source: 'camera' | 'screen';
+  seconds_ago: number;
+}
+
+/**
+ * Emitted when TTS speech starts playing.
+ */
+export interface SpeechStartedEvent extends BaseEvent {
+  event: 'speech_started';
+  text: string;
+}
+
+/**
+ * Emitted when TTS speech finishes playing.
+ */
+export interface SpeechFinishedEvent extends BaseEvent {
+  event: 'speech_finished';
+}
+
+/**
+ * Emitted when turn detection detects user has stopped speaking.
+ */
+export interface TurnDetectedEvent extends BaseEvent {
+  event: 'turn_detected';
+  transcript: string;
+}
+
 export type DriverEvent =
   | ReadyEvent
   | StateChangeEvent
@@ -124,7 +174,12 @@ export type DriverEvent =
   | FinishedEvent
   | ErrorEvent
   | ScreenshotCapturedEvent
-  | SessionCreatedEvent;
+  | SessionCreatedEvent
+  | AudioTranscriptEvent
+  | VideoFrameEvent
+  | SpeechStartedEvent
+  | SpeechFinishedEvent
+  | TurnDetectedEvent;
 
 // Action type from the driver
 export interface DriverAction {
@@ -133,6 +188,28 @@ export interface DriverAction {
   y?: number;
   [key: string]: unknown;
 }
+
+// MCP server configuration
+export interface MCPServerConfig {
+  name: string;
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+}
+
+// Agent identity
+export interface AgentIdentity {
+  name: string;
+  creator: string;
+  creator_url: string;
+}
+
+// Tool choice configuration
+export type ToolChoice =
+  | 'auto'
+  | 'required'
+  | 'none'
+  | { type: 'tool'; name: string };
 
 // Base command interface
 export interface BaseCommand {
@@ -148,14 +225,25 @@ export interface StartCommand extends BaseCommand {
   screen_height: number;
   platform: 'desktop' | 'android';
   model: string;
-  /** "local" for autonomous mode, "remote" for managed VM, "" for legacy SDK-driven mode */
-  mode?: string;
-  /** Agent name for the AGI API (e.g., "agi-2-claude") */
-  agent_name?: string;
-  /** AGI API base URL (default: "https://api.agi.tech") */
+  mode: '' | 'local' | 'remote';
+  agent_name: string;
   api_url?: string;
-  /** Environment type for remote mode ("ubuntu-1" or "chrome-1") */
   environment_type?: string;
+
+  // Multimodal features
+  agent_identity?: AgentIdentity;
+  tool_choice?: ToolChoice;
+  mcp_servers?: MCPServerConfig[];
+  audio_input_enabled?: boolean;
+  audio_buffer_seconds?: number;
+  turn_detection_enabled?: boolean;
+  turn_detection_silence_ms?: number;
+  speech_output_enabled?: boolean;
+  speech_voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
+  camera_enabled?: boolean;
+  camera_buffer_seconds?: number;
+  screen_recording_enabled?: boolean;
+  screen_recording_buffer_seconds?: number;
 }
 
 export interface ScreenshotCommand extends BaseCommand {
@@ -175,19 +263,31 @@ export interface ResumeCommand extends BaseCommand {
 
 export interface StopCommand extends BaseCommand {
   command: 'stop';
-  reason?: string;
+  reason: string;
 }
 
 export interface ConfirmResponseCommand extends BaseCommand {
   command: 'confirm';
   approved: boolean;
-  message?: string;
+  message: string;
 }
 
 export interface AnswerCommand extends BaseCommand {
   command: 'answer';
   text: string;
-  question_id?: string;
+  question_id: string;
+}
+
+export interface GetAudioTranscriptCommand extends BaseCommand {
+  command: 'get_audio_transcript';
+  seconds_ago: number;
+  duration: number;
+}
+
+export interface GetVideoFrameCommand extends BaseCommand {
+  command: 'get_video_frame';
+  source: 'camera' | 'screen';
+  seconds_ago: number;
 }
 
 export type DriverCommand =
@@ -197,19 +297,6 @@ export type DriverCommand =
   | ResumeCommand
   | StopCommand
   | ConfirmResponseCommand
-  | AnswerCommand;
-
-/**
- * Parse a JSON line into a DriverEvent.
- */
-export function parseEvent(line: string): DriverEvent {
-  const data = JSON.parse(line);
-  return data as DriverEvent;
-}
-
-/**
- * Serialize a command to a JSON line.
- */
-export function serializeCommand(command: DriverCommand): string {
-  return JSON.stringify(command);
-}
+  | AnswerCommand
+  | GetAudioTranscriptCommand
+  | GetVideoFrameCommand;

@@ -21,6 +21,11 @@ export {
   type ErrorEvent,
   type ScreenshotCapturedEvent,
   type SessionCreatedEvent,
+  type AudioTranscriptEvent,
+  type VideoFrameEvent,
+  type SpeechStartedEvent,
+  type SpeechFinishedEvent,
+  type TurnDetectedEvent,
   type StartCommand,
   type ScreenshotCommand,
   type PauseCommand,
@@ -28,6 +33,11 @@ export {
   type StopCommand,
   type ConfirmResponseCommand,
   type AnswerCommand,
+  type GetAudioTranscriptCommand,
+  type GetVideoFrameCommand,
+  type MCPServerConfig,
+  type AgentIdentity,
+  type ToolChoice,
 } from './protocol';
 
 export { findBinaryPath, isBinaryAvailable, getPlatformId, type PlatformId } from './binary';
