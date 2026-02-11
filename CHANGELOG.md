@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/agi-inc/agi-node/compare/agi-js-v0.4.2...agi-js-v0.4.3) (2026-02-11)
+
+
+### Features
+
+* add comprehensive multimodal driver support ([#11](https://github.com/agi-inc/agi-node/issues/11)) ([0b11341](https://github.com/agi-inc/agi-node/commit/0b1134116bee8ec1770be78beb126d7f09cd286d))
+
 ## [0.4.2](https://github.com/agi-inc/agi-node/compare/agi-js-v0.4.1...agi-js-v0.4.2) (2026-02-09)
 
 
