@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';" />
+  <title>AGI SDK Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <h1 class="logo">AGI SDK Demo</h1>
+
+      <div class="section">
+        <label class="section-label">API KEY</label>
+        <input type="password" id="apiKeyInput" placeholder="Enter your AGI API key..." />
+        <button id="connectBtn" class="btn btn-primary">Connect</button>
+      </div>
+
+      <div class="section">
+        <label class="section-label">AGENT MODEL</label>
+        <select id="agentSelect">
+          <option value="agi-0">agi-0</option>
+          <option value="agi-1">agi-1</option>
+          <option value="agi-2-claude">agi-2-claude</option>
+          <option value="agi-2-gpt">agi-2-gpt</option>
+        </select>
+        <button id="newSessionBtn" class="btn btn-primary" disabled>+ New Session</button>
+      </div>
+
+      <div class="section flex-grow">
+        <label class="section-label">SESSIONS</label>
+        <div id="sessionList" class="session-list"></div>
+      </div>
+
+      <button id="deleteBtn" class="btn btn-danger" disabled>Delete Session</button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <!-- Screenshot viewer -->
+      <div class="screenshot-viewer" id="screenshotViewer">
+        <img id="screenshotImg" alt="" style="display: none;" />
+        <span id="screenshotPlaceholder" class="placeholder">No screenshot available</span>
+      </div>
+
+      <!-- Session controls -->
+      <div class="controls-bar">
+        <button id="pauseBtn" class="btn btn-secondary" disabled>&#x23F8; Pause</button>
+        <button id="resumeBtn" class="btn btn-secondary" disabled>&#x25B6; Resume</button>
+        <button id="cancelBtn" class="btn btn-danger" disabled>&#x23F9; Cancel</button>
+      </div>
+
+      <!-- Event stream -->
+      <div class="event-stream" id="eventStream">
+        <div class="section-label" style="padding: 8px 12px;">Event Stream</div>
+        <div id="eventContainer" class="event-container"></div>
+      </div>
+
+      <!-- Command panel -->
+      <div class="command-panel">
+        <div class="input-row">
+          <input type="text" id="taskInput" placeholder="Enter a task for the agent..." disabled />
+          <button id="sendBtn" class="btn btn-primary" disabled>Send</button>
+        </div>
+        <div class="quick-cards">
+          <button class="quick-card" data-task="Find 3 nonstop SFO to JFK flights under $450 round trip">Flights</button>
+          <button class="quick-card" data-task="Open Uber and request a ride from downtown to the airport">Uber</button>
+          <button class="quick-card" data-task="Order 2 lbs of organic bananas and almond milk on Instacart">Instacart</button>
+          <button class="quick-card" data-task="Schedule a 30-min team standup for tomorrow at 10am on Google Calendar">Meeting</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Status bar -->
+  <footer class="status-bar">
+    <span id="connectionStatus">&#x26AA; Disconnected</span>
+    <span id="sessionStatus">Session: --</span>
+    <span id="runStatus" class="status-right">Idle</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

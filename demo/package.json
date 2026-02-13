@@ -1,0 +1,17 @@
+{
+  "name": "agi-sdk-demo",
+  "version": "1.0.0",
+  "description": "AGI Node.js SDK Demo - Electron GUI",
+  "main": "main.ts",
+  "scripts": {
+    "start": "electron --require ts-node/register main.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "electron": "^33.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
