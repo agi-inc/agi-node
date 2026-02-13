@@ -514,6 +514,27 @@ npx tsx examples/research/competitor-analysis.ts \
 
 ---
 
+## Demo App
+
+An interactive Electron desktop application showcasing all SDK capabilities:
+
+- API key connection and agent model selection
+- Session create/list/delete
+- Real-time SSE event streaming via IPC
+- Live screenshot viewer (auto-refresh every 3s)
+- Pause/Resume/Cancel controls
+- Quick action cards for common tasks
+
+```bash
+cd demo && npm install
+cd .. && npm install
+AGI_API_KEY=your-key npx electron --require ts-node/register demo/main.ts
+```
+
+See [`demo/`](./demo) for the full source.
+
+---
+
 ## Documentation & Resources
 
 **Learn More**
