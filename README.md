@@ -514,6 +514,20 @@ npx tsx examples/research/competitor-analysis.ts \
 
 ---
 
+## Demo App
+
+An interactive Electron desktop GUI that showcases all SDK capabilities — sessions, SSE streaming, screenshots, pause/resume/cancel, and quick action cards.
+
+**[agi-inc/demo-node-electron](https://github.com/agi-inc/demo-node-electron)**
+
+```bash
+git clone https://github.com/agi-inc/demo-node-electron.git && cd demo-node-electron
+npm install
+AGI_API_KEY=your-key npx electron --require ts-node/register main.ts
+```
+
+---
+
 ## Documentation & Resources
 
 **Learn More**
