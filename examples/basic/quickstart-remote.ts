@@ -85,9 +85,7 @@ async function main() {
   console.log('--- High-level API ---');
   {
     await using session = client.session('agi-0');
-    const result = await session.runTask(
-      'Search for the latest Node.js LTS version'
-    );
+    const result = await session.runTask('Search for the latest Node.js LTS version');
     console.log(`Result: ${result.data}`);
     console.log(`Duration: ${result.metadata.duration}s`);
     console.log(`Steps: ${result.metadata.steps}`);
